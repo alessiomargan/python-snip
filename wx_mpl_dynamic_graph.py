@@ -93,7 +93,9 @@ class DataGenZMQ(threading.Thread) :
         threading.Thread.__init__(self)
         self.buffered = defaultdict(list)
         self.lock_buff = threading.RLock()
-
+        self.stop_event = threading.Event()
+        self.stop_event.clear()
+        
         zmq_context = kwargs.pop('zmq_context')
         zmq_pub = kwargs.pop('zmq_pub')
         self.zmq_msg_sub = kwargs.pop('zmq_msg_sub',[])
@@ -101,18 +103,14 @@ class DataGenZMQ(threading.Thread) :
 
         assert(zmq_context)
         self.subscriber = zmq_context.socket(zmq.SUB)
-        self.subscriber.connect(zmq_pub)
         for msg in self.zmq_msg_sub :
             self.subscriber.setsockopt(zmq.SUBSCRIBE, msg)
+        self.subscriber.connect(zmq_pub)
         print 'Connect to Data publisher %s' % zmq_pub 
-        self.gui_reader = zmq_context.socket(zmq.PULL)
-        self.gui_reader.connect("inproc://gui")
-        print 'Connect to inproc://gui' 
 
         # Initialize poll set
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
-        self.poller.register(self.gui_reader, zmq.POLLIN)
 
         # start thread activity
         self.start()
@@ -125,11 +123,9 @@ class DataGenZMQ(threading.Thread) :
         elapsed = datetime.timedelta()
         fire_event = datetime.timedelta(milliseconds=self.draw_event_freq_ms)
 
-        while 1 :
+        while not self.stop_event.is_set():
+            
             socks = dict(self.poller.poll())
-
-            if self.gui_reader in socks and socks[self.gui_reader] == zmq.POLLIN:
-                break
 
             if self.subscriber in socks and socks[self.subscriber] == zmq.POLLIN:
                 now = datetime.datetime.now()
@@ -142,8 +138,7 @@ class DataGenZMQ(threading.Thread) :
                 except ValueError :
                     continue
                 with self.lock_buff :
-                    self.buffered[id].append(json.JSONDecoder().decode(message))
-
+                    self.buffered[id].append(json.loads(message))
                 if elapsed > fire_event :
                     #print self.buffered
                     #print elapsed, fire_event
@@ -154,6 +149,11 @@ class DataGenZMQ(threading.Thread) :
 
         print "thread Exit ..."
 
+
+    def stop(self):
+        ''' '''
+        self.stop_event.set()
+       
 
     def next(self):
         '''  '''
@@ -185,6 +185,8 @@ class Plot():
         _zmq_msg_sub = kwargs.get('zmq_msg_sub',[])
         _signals = kwargs.get('signals',[])
 
+        # dict of samples list
+        # self._data[k] = [samples]
         self._data = defaultdict(list)
         for m in _zmq_msg_sub :
             for s in _signals :
@@ -209,7 +211,8 @@ class Plot():
             _plot.set_ydata(np.array(self._data[k]))
 
     def set_data(self, new_data):
-
+        ''' 
+        '''
         for k in self._data.iterkeys() :
             self._data[k].extend(new_data[k])
             self._data[k] = self._data[k][-self._max_samples:]
@@ -246,7 +249,7 @@ class BoundControlBox(wx.Panel):
         self.radio_manual = wx.RadioButton(self, -1,
                                            label="Manual")
         self.manual_text = wx.TextCtrl(self, -1, 
-                                       size=(35,-1),
+                                       size=(70,-1),
                                        value=str(initval),
                                        style=wx.TE_PROCESS_ENTER)
 
@@ -257,8 +260,8 @@ class BoundControlBox(wx.Panel):
         manual_box.Add(self.radio_manual, flag=wx.ALIGN_CENTER_VERTICAL)
         manual_box.Add(self.manual_text, flag=wx.ALIGN_CENTER_VERTICAL)
 
-        sizer.Add(self.radio_auto, 0, wx.ALL, 10)
-        sizer.Add(manual_box, 0, wx.ALL, 10)
+        sizer.Add(self.radio_auto, -1, wx.ALL, 2)
+        sizer.Add(manual_box, -1, wx.ALL, 2)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -288,9 +291,6 @@ class GraphFrame(wx.Frame):
         self.kwargs = kwargs
 
         zmq_context = kwargs.get('zmq_context')
-        assert(zmq_context)
-        self.gui_sender = zmq_context.socket(zmq.PUSH)
-        self.gui_sender.bind("inproc://gui")
 
         # start with null data generator 
         self.datagen = DataGenFake()
@@ -538,7 +538,7 @@ class GraphFrame(wx.Frame):
 
     def on_close(self, event):
 
-        self.gui_sender.send("BYE")
+        self.datagen.stop()
         self.Destroy()
 
 

@@ -4,12 +4,12 @@
 #ZPUB="amargan-desktop.local:6666"
 #ZPUB="amargan-desktop.local:6666"
 #ZPUB="10.255.32.91:5555"
-#ZPUB="pc104-alessio.local:5555"
-#ZPUB="ccub-embedded.local:5555"
-#ZPUB="ccub-deb-test.local:6666"
 #ZPUB="10.0.0.99:6666"
+#ZPUB="pc104-alessio.local:6666"
+#ZPUB="ccub-embedded.local:6666"
+#ZPUB="ccub-deb-test.local:6666"
 #ZPUB="carm-deb.local:6666"
-ZPUB="ccub-deb-test.local:6666"
+ZPUB="wheezy-i386-test.local:6666"
 
 #MSG_ID="board_0,board_1,board_2,board_3"
 MSG_ID="board_1"
@@ -28,8 +28,8 @@ python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --si
 MSG_ID="board_1"
 SIGNALS="Delta_tor"
 #SIGNALS="Height"
-python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500 &
+#python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500 &
 
 MSG_ID="board_2"
 SIGNALS="Position"
-python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500
+#python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500

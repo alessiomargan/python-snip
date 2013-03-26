@@ -9,7 +9,7 @@
 #ZPUB="ccub-embedded.local:6666"
 #ZPUB="ccub-deb-test.local:6666"
 #ZPUB="carm-deb.local:6666"
-ZPUB="wheezy-i386-test.local:6666"
+ZPUB="wheezy-i386-test.local:6668"
 
 #MSG_ID="board_0,board_1,board_2,board_3"
 MSG_ID="board_1"
@@ -20,9 +20,9 @@ MSG_ID="board_1"
 #SIGNALS="Position,Torque,Target_Pos,PID_out,PID_err"
 #SIGNALS="sine,saw,square,triangle"
 #SIGNALS="fx,fy,fz"
-SIGNALS="Position"
+SIGNALS="Position,PID_err,Tendon_tor"
 
-python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 10000 --draw-event-freq-ms 500 &
 
 
 MSG_ID="board_1"
@@ -32,4 +32,4 @@ SIGNALS="Delta_tor"
 
 MSG_ID="board_2"
 SIGNALS="Position"
-python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 10000 --draw-event-freq-ms 250

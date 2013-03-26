@@ -27,19 +27,19 @@ POLLER_TIMEOUT = 3
 
 def default_cb(id, data):
     
-    pprint.pprint((id,data))
+    return id,data
 
 def json_cb(id, data):
     
-    pprint.pprint((id,json.loads(data)))
+    return id, json.loads(data)
     
 def cstruct_cb(id,data):
-
-    policy = 'Position|Tendon_tor|Lin_enc_raw|Delta_tor|Lin_enc_vel'
+    ''' broadcast policy MUST match the one set for DSP board !!!! '''
+    policy = 'Position|Velocity|Torque|PID_err|PID_out|Current|Tendon_tor|Faults|Height|Hip_pos|Target_pos|Lin_enc_pos|Lin_enc_raw|Delta_tor|Lin_enc_vel'
     bcast_data = board_data_type.data_factory(policy, policy_maps.bigLeg_policy_map)
     bcast_data.decode(data)    
     data_dict = bcast_data.toDict(all_fields=False)
-    pprint.pprint((id,data_dict))
+    return id, data_dict
 
 
 cb_map = {'default_cb': default_cb,
@@ -99,7 +99,8 @@ class ZMQ_sub(threading.Thread) :
                 except ValueError :
                     continue
                 
-                self.callback(id, data)
+                id, data = self.callback(id, data)
+                #pprint.pprint((id,data))
 
         print "thread Exit ..."
 
@@ -130,8 +131,8 @@ if __name__ == '__main__' :
 
     # one ctx for each process
     dict_opt['zmq_context'] = zmq.Context()
-    dict_opt['zmq_msg_sub'] = options.zmq_msg_sub.split(',')
-    dict_opt['signals'] = options.signals.split(',')    
+    dict_opt['zmq_msg_sub'] = dict_opt['zmq_msg_sub'].split(',')
+    dict_opt['signals'] = dict_opt['signals'].split(',')    
     
     th = ZMQ_sub(**dict_opt)
     try : sys.__stdin__.readline()

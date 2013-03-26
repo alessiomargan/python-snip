@@ -84,7 +84,7 @@ class DataGen(ioModel.Log_model) :
 import datetime
 import threading
 import json
-from zmq_sub_gen import ZMQ_sub
+from zmq_sub import ZMQ_sub, cstruct_cb, json_cb
 
 class ZMQ_sub_json(ZMQ_sub) :
     
@@ -101,11 +101,12 @@ class ZMQ_sub_json(ZMQ_sub) :
     def on_rx(self, id, data):
         ''' '''
         with self.lock_buff :
-            self.buffered[id].append(json.loads(data))
+            id, data = cstruct_cb(id, data)
+            #id, data = json_cb(id, data)
+            self.buffered[id].append(data)
         self.elapsed += self.msg_loop
         
         if self.elapsed > self.fire_event :
-            #print self.elapsed, self.fire_event
             # reset measured elapsed
             self.elapsed = datetime.timedelta()
             
@@ -113,6 +114,7 @@ class ZMQ_sub_json(ZMQ_sub) :
             try : wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
             except : pass
         
+        return id, data
 
     def next(self):
         '''  '''

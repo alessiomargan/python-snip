@@ -20,7 +20,7 @@ MSG_ID="board_1"
 #SIGNALS="Position,Torque,Target_Pos,PID_out,PID_err"
 #SIGNALS="sine,saw,square,triangle"
 #SIGNALS="fx,fy,fz"
-SIGNALS="Position,Lin_enc_raw"
+SIGNALS="Position"
 
 python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
 
@@ -32,4 +32,4 @@ SIGNALS="Delta_tor"
 
 MSG_ID="board_2"
 SIGNALS="Position"
-#python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500

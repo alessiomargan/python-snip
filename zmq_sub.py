@@ -19,19 +19,19 @@ CSTRUCT_PUB_PORT = 6668
 
 #DEFAULT_ZMQ_PUB = 'tcp://carm-deb.local:6666'
 #DEFAULT_ZMQ_PUB = 'tcp://ccub-deb-test.local:6666'
-#DEFAULT_ZMQ_PUB = 'tcp://localhost:6666'
-DEFAULT_ZMQ_PUB = 'tcp://wheezy-i386-test.local:%d'%JSON_PUB_PORT
+DEFAULT_ZMQ_PUB = 'tcp://localhost:%d'%CSTRUCT_PUB_PORT
+#DEFAULT_ZMQ_PUB = 'tcp://wheezy-i386-test.local:%d'%CSTRUCT_PUB_PORT
 
 POLLER_TIMEOUT = 3
 
 
 def default_cb(id, data):
     
-    return id,data
+    pprint.pprint((id,data))
 
 def json_cb(id, data):
     
-    return id, json.loads(data)
+    pprint.pprint(id,json.loads(data))
     
 def cstruct_cb(id,data):
     ''' broadcast policy MUST match the one set for DSP board !!!! '''
@@ -39,7 +39,7 @@ def cstruct_cb(id,data):
     bcast_data = board_data_type.data_factory(policy, policy_maps.bigLeg_policy_map)
     bcast_data.decode(data)    
     data_dict = bcast_data.toDict(all_fields=False)
-    return id, data_dict
+    pprint.pprint((id, data_dict))
 
 
 cb_map = {'default_cb': default_cb,
@@ -96,11 +96,14 @@ class ZMQ_sub(threading.Thread) :
                 #print self.msg_loop
                 try :
                     id, data = self.subscriber.recv_multipart()
-                except ValueError :
+                except Exception, e :
+                    print e
                     continue
                 
-                id, data = self.callback(id, data)
-                #pprint.pprint((id,data))
+                self.callback(id, data)
+                
+            else :
+                print datetime.datetime.now(), "poller timeout"
 
         print "thread Exit ..."
 

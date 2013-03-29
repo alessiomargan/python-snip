@@ -114,7 +114,6 @@ class ZMQ_sub_json(ZMQ_sub) :
             try : wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
             except : pass
         
-        return id, data
 
     def next(self):
         '''  '''

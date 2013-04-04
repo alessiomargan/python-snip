@@ -1,8 +1,11 @@
 #!/usr/bin/python
+
 import os
 import pprint
 import random
 import sys
+from collections import defaultdict
+
 import wx
 import wx.lib.newevent
 (UpdateIoEvent, EVT_UPDATE_IO) = wx.lib.newevent.NewEvent()
@@ -78,96 +81,52 @@ class DataGen(ioModel.Log_model) :
         return data
 '''
 # #################################################################
-
+import datetime
 import threading
-import time, datetime
-import zmq
 import json
-from collections import defaultdict
+from zmq_sub import ZMQ_sub, cstruct_cb, json_cb
 
-class DataGenZMQ(threading.Thread) :
-    ''' read json data from a zmq publisher '''
-
+class ZMQ_sub_json(ZMQ_sub) :
+    
     def __init__(self, **kwargs):
-
-        threading.Thread.__init__(self)
+        
+        draw_event_freq_ms = kwargs.pop('draw_event_freq_ms',100)
+        self.fire_event = datetime.timedelta(milliseconds=draw_event_freq_ms)
+        self.elapsed = datetime.timedelta()
         self.buffered = defaultdict(list)
         self.lock_buff = threading.RLock()
-
-        zmq_context = kwargs.pop('zmq_context')
-        zmq_pub = kwargs.pop('zmq_pub')
-        self.zmq_msg_sub = kwargs.pop('zmq_msg_sub',[])
-        self.draw_event_freq_ms = kwargs.pop('draw_event_freq_ms',100)
-
-        assert(zmq_context)
-        self.subscriber = zmq_context.socket(zmq.SUB)
-        self.subscriber.connect(zmq_pub)
-        for msg in self.zmq_msg_sub :
-            self.subscriber.setsockopt(zmq.SUBSCRIBE, msg)
-        print 'Connect to Data publisher %s' % zmq_pub 
-        self.gui_reader = zmq_context.socket(zmq.PULL)
-        self.gui_reader.connect("inproc://gui")
-        print 'Connect to inproc://gui' 
-
-        # Initialize poll set
-        self.poller = zmq.Poller()
-        self.poller.register(self.subscriber, zmq.POLLIN)
-        self.poller.register(self.gui_reader, zmq.POLLIN)
-
-        # start thread activity
-        self.start()
-
-
-    def run(self):
-        ''' poll on sockets '''
-
-        previous = datetime.datetime.now()
-        elapsed = datetime.timedelta()
-        fire_event = datetime.timedelta(milliseconds=self.draw_event_freq_ms)
-
-        while 1 :
-            socks = dict(self.poller.poll())
-
-            if self.gui_reader in socks and socks[self.gui_reader] == zmq.POLLIN:
-                break
-
-            if self.subscriber in socks and socks[self.subscriber] == zmq.POLLIN:
-                now = datetime.datetime.now()
-                msg_loop = now - previous
-                elapsed += msg_loop
-                previous = now
-                #print msg_loop
-                try :
-                    id, message = self.subscriber.recv_multipart()
-                except ValueError :
-                    continue
-                with self.lock_buff :
-                    self.buffered[id].append(json.JSONDecoder().decode(message))
-
-                if elapsed > fire_event :
-                    #print self.buffered
-                    #print elapsed, fire_event
-                    elapsed = datetime.timedelta()
-                    evt = UpdateIoEvent(id=id)
-                    try : wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
-                    except : pass
-
-        print "thread Exit ..."
-
+        ZMQ_sub.__init__(self, **kwargs)
+        self.callback = self.on_rx
+        
+    def on_rx(self, id, data):
+        ''' '''
+        with self.lock_buff :
+            id, data = cstruct_cb(id, data)
+            #id, data = json_cb(id, data)
+            self.buffered[id].append(data)
+        self.elapsed += self.msg_loop
+        
+        if self.elapsed > self.fire_event :
+            # reset measured elapsed
+            self.elapsed = datetime.timedelta()
+            
+            evt = UpdateIoEvent(id=id)
+            try : wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
+            except : pass
+        
 
     def next(self):
         '''  '''
         data = defaultdict(list)
         with self.lock_buff :
-            #if len(self.buffered) :
             for id in self.buffered.iterkeys():
+                #print '>>', id, len(self.buffered[id])
                 for d in self.buffered[id] :
                     for k, v in d.items() :
                         data[id+'_'+k].append(v)
-            if set(self.buffered.keys()) == set(self.zmq_msg_sub) :
-                self.buffered = defaultdict(list)
+            # clean buffered data
+            self.buffered = defaultdict(list)
         return data
-
 
 
 # ###############################################################
@@ -185,6 +144,8 @@ class Plot():
         _zmq_msg_sub = kwargs.get('zmq_msg_sub',[])
         _signals = kwargs.get('signals',[])
 
+        # dict of samples list
+        # self._data[k] = [samples]
         self._data = defaultdict(list)
         for m in _zmq_msg_sub :
             for s in _signals :
@@ -209,7 +170,8 @@ class Plot():
             _plot.set_ydata(np.array(self._data[k]))
 
     def set_data(self, new_data):
-
+        ''' 
+        '''
         for k in self._data.iterkeys() :
             self._data[k].extend(new_data[k])
             self._data[k] = self._data[k][-self._max_samples:]
@@ -246,7 +208,7 @@ class BoundControlBox(wx.Panel):
         self.radio_manual = wx.RadioButton(self, -1,
                                            label="Manual")
         self.manual_text = wx.TextCtrl(self, -1, 
-                                       size=(35,-1),
+                                       size=(70,-1),
                                        value=str(initval),
                                        style=wx.TE_PROCESS_ENTER)
 
@@ -257,8 +219,8 @@ class BoundControlBox(wx.Panel):
         manual_box.Add(self.radio_manual, flag=wx.ALIGN_CENTER_VERTICAL)
         manual_box.Add(self.manual_text, flag=wx.ALIGN_CENTER_VERTICAL)
 
-        sizer.Add(self.radio_auto, 0, wx.ALL, 10)
-        sizer.Add(manual_box, 0, wx.ALL, 10)
+        sizer.Add(self.radio_auto, -1, wx.ALL, 2)
+        sizer.Add(manual_box, -1, wx.ALL, 2)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -287,11 +249,6 @@ class GraphFrame(wx.Frame):
 
         self.kwargs = kwargs
 
-        zmq_context = kwargs.get('zmq_context')
-        assert(zmq_context)
-        self.gui_sender = zmq_context.socket(zmq.PUSH)
-        self.gui_sender.bind("inproc://gui")
-
         # start with null data generator 
         self.datagen = DataGenFake()
         self.data = self.datagen.next()
@@ -301,7 +258,7 @@ class GraphFrame(wx.Frame):
         self.create_menu()
         self.create_status_bar()
         self.create_main_panel()
-
+        
         # 
         self.Bind(EVT_UPDATE_IO, self.on_redraw_timer)
         self.Bind(wx.EVT_CLOSE, self.on_close)
@@ -538,7 +495,7 @@ class GraphFrame(wx.Frame):
 
     def on_close(self, event):
 
-        self.gui_sender.send("BYE")
+        self.datagen.stop()
         self.Destroy()
 
 
@@ -585,7 +542,7 @@ def main_zmq():
 
     import zmq
     from optparse import OptionParser
-
+    
     parser = OptionParser()
     parser.add_option("--zmq-pub", action="store", type="string", dest="zmq_pub", default="tcp://localhost:5555")
     parser.add_option("--zmq-msg-sub", action="store", type="string", dest="zmq_msg_sub", default="")
@@ -607,7 +564,7 @@ def main_zmq():
     frame.Show(True)
 
     # data generator
-    datagen = DataGenZMQ(**dict_opt)
+    datagen = ZMQ_sub_json(**dict_opt)
     frame.datagen = datagen
 
     app.MainLoop()

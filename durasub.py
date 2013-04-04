@@ -39,7 +39,6 @@ try :
         except KeyError : ids[id] = 0
         ids[id] += 1
         
-        
         now = datetime.datetime.now()
         elap = now - prev
         prev = now

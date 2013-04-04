@@ -17,8 +17,8 @@ except : pass
 #DEFAULT_ZMQ_PUB = 'tcp://localhost:5555'
 #DEFAULT_ZMQ_PUB = 'tcp://carm-deb.local:6666'
 #DEFAULT_ZMQ_PUB = 'tcp://10.255.32.203:6666'
-#DEFAULT_ZMQ_PUB = 'tcp://ccub-deb-test.local:6666'
-DEFAULT_ZMQ_PUB = 'tcp://localhost:6666'
+DEFAULT_ZMQ_PUB = 'tcp://ccub-deb-test.local:6666'
+#DEFAULT_ZMQ_PUB = 'tcp://localhost:6666'
 
 hiris_vars = defaultdict(list)
 

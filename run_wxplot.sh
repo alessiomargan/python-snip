@@ -11,6 +11,7 @@
 #ZPUB="carm-deb.local:6666"
 ZPUB="ccub-deb-test.local:6666"
 
+
 #MSG_ID="board_0,board_1,board_2,board_3"
 MSG_ID="board_1"
 #MSG_ID="pc104"
@@ -20,16 +21,26 @@ MSG_ID="board_1"
 #SIGNALS="Position,Torque,Target_Pos,PID_out,PID_err"
 #SIGNALS="sine,saw,square,triangle"
 #SIGNALS="fx,fy,fz"
-SIGNALS="Position,Lin_enc_raw"
+SIGNALS="Position,Target_pos"
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
 
+MSG_ID="board_1"
+SIGNALS="Delta_tor,PID_err"
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
+
+MSG_ID="board_2"
+SIGNALS="Hip_pos"
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
+
+MSG_ID="board_2"
+SIGNALS="Height"
 python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
 
 
-MSG_ID="board_1"
-SIGNALS="Delta_tor"
-#SIGNALS="Height"
-python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500 &
-
 MSG_ID="board_2"
 SIGNALS="Position"
-python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500
+#python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500 &
+
+MSG_ID="board_2"
+SIGNALS="Torque"
+#python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 2000 --draw-event-freq-ms 500 &

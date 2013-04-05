@@ -36,12 +36,18 @@ def json_cb(id, data):
     
 def cstruct_cb(id,data):
     ''' broadcast policy MUST match the one set for DSP board !!!! '''
-    policy = 'Position|Velocity|Torque|PID_err|PID_out|Current|Tendon_tor|Faults|Height|Hip_pos|Target_pos|Lin_enc_pos|Lin_enc_raw|Delta_tor|Lin_enc_vel'
-    bcast_data = board_data_type.data_factory(policy, policy_maps.bigLeg_policy_map)
-    bcast_data.decode(data)    
-    data_dict = bcast_data.toDict(all_fields=False)
-    pprint.pprint((id, data_dict))
+    policy = 'Position|Velocity|Torque|PID_out|PID_err|Link_pos|Target_pos|TempTarget_pos'
+    bcast_data = board_data_type.data_factory(policy, policy_maps.mc_policy_map) # bigLeg_policy_map)
+    bcast_data.decode(data) 
+    # do some scaling
+    bcast_data.Position /= 1e2
+    bcast_data.Target_pos /= 1e2
+    bcast_data.TempTarget_pos /= 1e2
 
+    
+    data_dict = bcast_data.toDict(all_fields=False)
+    #pprint.pprint((id, data_dict))
+    return id, data_dict
 
 cb_map = {'default_cb': default_cb,
           'json_cb':    json_cb,
@@ -104,7 +110,7 @@ class ZMQ_sub(threading.Thread) :
                 self.callback(id, data)
                 
             else :
-                print datetime.datetime.now(), "poller timeout"
+                print datetime.datetime.now(), socks, "poller timeout"
 
         print "thread Exit ..."
 
@@ -127,9 +133,6 @@ def zmq_sub_option():
     
     
 if __name__ == '__main__' :
-    
-    import sys
-    import csv
     
     dict_opt = zmq_sub_option()
 

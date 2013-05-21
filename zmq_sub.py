@@ -19,28 +19,32 @@ CSTRUCT_PUB_PORT = 6668
 
 #DEFAULT_ZMQ_PUB = 'tcp://carm-deb.local:6666'
 #DEFAULT_ZMQ_PUB = 'tcp://ccub-deb-test.local:6666'
-DEFAULT_ZMQ_PUB = 'tcp://localhost:%d'%CSTRUCT_PUB_PORT
+#DEFAULT_ZMQ_PUB = 'tcp://localhost:%d'%CSTRUCT_PUB_PORT
 #DEFAULT_ZMQ_PUB = 'tcp://wheezy-i386-test.local:%d'%CSTRUCT_PUB_PORT
+#DEFAULT_ZMQ_PUB = 'tcp://localhost:5555'
+#DEFAULT_ZMQ_PUB = 'ipc:///tmp/6969'
+DEFAULT_ZMQ_PUB = 'tcp://coman-linux.local:%d'%CSTRUCT_PUB_PORT
 
 POLLER_TIMEOUT = 3
 
 
 def default_cb(id, data):
     
-    pprint.pprint((id,data))
+    return id,data
 
 def json_cb(id, data):
     
-    pprint.pprint(id,json.loads(data))
+    return id,json.loads(data)
     
 def cstruct_cb(id,data):
     ''' broadcast policy MUST match the one set for DSP board !!!! '''
-    policy = 'Position|Velocity|Torque|PID_err|PID_out|Current|Tendon_tor|Faults|Height|Hip_pos|Target_pos|Lin_enc_pos|Lin_enc_raw|Delta_tor|Lin_enc_vel'
+    #policy = 'Position|Velocity|Torque|PID_err|PID_out|Current|Tendon_tor|Faults|Height|Hip_pos|Target_pos|Lin_enc_pos|Lin_enc_raw|Delta_tor|Lin_enc_vel'
+    policy = 'Position|Velocity|Torque|PID_out|PID_err|Link_pos|Target_pos|TempTarget_pos'
     bcast_data = board_data_type.data_factory(policy, policy_maps.bigLeg_policy_map)
     bcast_data.decode(data)    
     data_dict = bcast_data.toDict(all_fields=False)
-    pprint.pprint((id, data_dict))
-
+    #pprint.pprint((id, data_dict))
+    return id,data_dict
 
 cb_map = {'default_cb': default_cb,
           'json_cb':    json_cb,
@@ -56,6 +60,7 @@ class ZMQ_sub(threading.Thread) :
         threading.Thread.__init__(self)
         self.stop_event = threading.Event()
         self.stop_event.clear()
+        self.msg_id_ts = defaultdict(list)
         
         self.zmq_context = kwargs.get('zmq_context')
         self.zmq_pub = kwargs.get('zmq_pub')
@@ -74,7 +79,7 @@ class ZMQ_sub(threading.Thread) :
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
 
-        self.msg_loop = datetime.timedelta()
+        
         # start thread activity .... start by user !!!!
         self.start()
 
@@ -83,8 +88,10 @@ class ZMQ_sub(threading.Thread) :
         ''' poll on sockets '''
 
         print "...start thread activity"
+        start_time = datetime.datetime.now()
         previous = datetime.datetime.now()
-
+        self.msg_loop = datetime.timedelta()
+        
         while not self.stop_event.is_set():
             
             socks = dict(self.poller.poll(POLLER_TIMEOUT))
@@ -93,17 +100,18 @@ class ZMQ_sub(threading.Thread) :
                 now = datetime.datetime.now()
                 self.msg_loop = now - previous
                 previous = now
-                #print self.msg_loop
                 try :
                     id, data = self.subscriber.recv_multipart()
+                    self.msg_id_ts[id].append(now-start_time)
                 except Exception, e :
                     print e
                     continue
                 
-                self.callback(id, data)
+                id, data = self.callback(id, data)
+                #pprint.pprint((id, data))
                 
-            else :
-                print datetime.datetime.now(), "poller timeout"
+            #else :
+            #    print datetime.datetime.now(), "poller timeout"
 
         print "thread Exit ..."
 
@@ -129,6 +137,7 @@ if __name__ == '__main__' :
     
     import sys
     import csv
+    import operator
     
     dict_opt = zmq_sub_option()
 
@@ -142,3 +151,7 @@ if __name__ == '__main__' :
     except KeyboardInterrupt : pass
     print "Set thread event ...."
     th.stop()
+
+    for k in th.msg_id_ts.iterkeys() :
+        pprint.pprint((k, th.msg_id_ts[k][:10]))
+        print reduce(operator.add ,(ts for ts in th.msg_id_ts[k]))

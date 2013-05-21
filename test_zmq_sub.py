@@ -112,7 +112,7 @@ if __name__ == '__main__' :
     try : sys.__stdin__.readline()
     except KeyboardInterrupt : pass
     print "Set thread event ...."
-    th.ev.set()
+    th.stop()
         
     w = csv.writer(open('M.csv', 'w'),delimiter=' ')
     w.writerows(itertools.izip(hiris_vars['mag_x'],hiris_vars['mag_y'],hiris_vars['mag_z']))    

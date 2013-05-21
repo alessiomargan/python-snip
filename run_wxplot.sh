@@ -22,6 +22,7 @@ ZPUB="coman-linux.local:6668"
 
 MSG_ID="board_1,board_2,board_3"
 #MSG_ID="board_17,board_21"
+#MSG_ID="board_0,board_1,board_2,board_3"
 #MSG_ID="pc104"
 
 #SIGNALS="Piezo_out,Position,TT_2,TT_3"
@@ -32,6 +33,14 @@ SIGNALS="Position"
 #SIGNALS="Position,"
 
 python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 5000 --draw-event-freq-ms 500 &
+
+MSG_ID="board_2"
+SIGNALS="Hip_pos"
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
+
+MSG_ID="board_2"
+SIGNALS="Height"
+python wx_mpl_dynamic_graph.py --zmq-pub tcp://$ZPUB  --zmq-msg-sub $MSG_ID --signals $SIGNALS --max-samples 4000 --draw-event-freq-ms 500 &
 
 
 #MSG_ID="board_1"

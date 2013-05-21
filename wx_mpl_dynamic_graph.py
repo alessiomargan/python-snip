@@ -152,7 +152,7 @@ class Plot():
             for s in _signals :
                 self._data[m+'_'+s]
 
-        _color = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+        _color = ['b', 'g', 'r', 'c', 'm', 'y', 'k','w']
         color_iterator = iter(_color)
 
         self._plot = dict()
@@ -179,8 +179,8 @@ class Plot():
             # ?!?!? 
             if len(self._data[k]):
                 self._length = max(len(self._data[k]), self._length)
-                self._ymin = min(round(min(self._data[k]),0)-1, self._ymin)
-                self._ymax = max(round(max(self._data[k]),0)+1, self._ymax)
+                self._ymin = round(min(self._data[k]),0)-1
+                self._ymax = round(max(self._data[k]),0)+1
 
     def __len__(self):
 
@@ -393,12 +393,12 @@ class GraphFrame(wx.Frame):
         # the whole data set.
         #
         if self.ymin_control.is_auto():
-            ymin = self.plot.minmax()[0]
+            ymin = self.plot.minmax()[0] + self.plot.minmax()[0] * 0.01
         else:
             ymin = int(self.ymin_control.manual_value())
 
         if self.ymax_control.is_auto():
-            ymax = self.plot.minmax()[1]
+            ymax = self.plot.minmax()[1] - self.plot.minmax()[1] * 0.01
         else:
             ymax = int(self.ymax_control.manual_value())
 

@@ -8,6 +8,7 @@ import json
 from collections import defaultdict
 from optparse import OptionParser
 
+
 import sys
 sys.path.append('/usr/local/src/COMAN_shared/utils/python')
 import board_data_type
@@ -38,6 +39,7 @@ def json_cb(id, data):
     
 def cstruct_cb(id,data):
     ''' broadcast policy MUST match the one set for DSP board !!!! '''
+<<<<<<< HEAD
     #policy = 'Position|Velocity|Torque|PID_err|PID_out|Current|Tendon_tor|Faults|Height|Hip_pos|Target_pos|Lin_enc_pos|Lin_enc_raw|Delta_tor|Lin_enc_vel'
     policy = 'Position|Velocity|Torque|PID_out|PID_err|Link_pos|Target_pos|TempTarget_pos'
     bcast_data = board_data_type.data_factory(policy, policy_maps.bigLeg_policy_map)
@@ -45,6 +47,20 @@ def cstruct_cb(id,data):
     data_dict = bcast_data.toDict(all_fields=False)
     #pprint.pprint((id, data_dict))
     return id,data_dict
+=======
+    policy = 'Position|Velocity|Torque|PID_out|PID_err|Link_pos|Target_pos|TempTarget_pos'
+    bcast_data = board_data_type.data_factory(policy, policy_maps.mc_policy_map) # bigLeg_policy_map)
+    bcast_data.decode(data) 
+    # do some scaling
+    bcast_data.Position /= 1e2
+    bcast_data.Target_pos /= 1e2
+    bcast_data.TempTarget_pos /= 1e2
+
+    
+    data_dict = bcast_data.toDict(all_fields=False)
+    #pprint.pprint((id, data_dict))
+    return id, data_dict
+>>>>>>> bec8e0609908975239ef3c6c9fd0d93ba88b4fd2
 
 cb_map = {'default_cb': default_cb,
           'json_cb':    json_cb,
@@ -110,8 +126,13 @@ class ZMQ_sub(threading.Thread) :
                 id, data = self.callback(id, data)
                 #pprint.pprint((id, data))
                 
+<<<<<<< HEAD
             #else :
             #    print datetime.datetime.now(), "poller timeout"
+=======
+            else :
+                print datetime.datetime.now(), socks, "poller timeout"
+>>>>>>> bec8e0609908975239ef3c6c9fd0d93ba88b4fd2
 
         print "thread Exit ..."
 
@@ -135,10 +156,13 @@ def zmq_sub_option():
     
 if __name__ == '__main__' :
     
+<<<<<<< HEAD
     import sys
     import csv
     import operator
     
+=======
+>>>>>>> bec8e0609908975239ef3c6c9fd0d93ba88b4fd2
     dict_opt = zmq_sub_option()
 
     # one ctx for each process

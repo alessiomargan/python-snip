@@ -19,9 +19,11 @@ subscriber.setsockopt(zmq.IDENTITY, "Hello")
 subscriber.setsockopt(zmq.SUBSCRIBE, "")
 #subscriber.connect("tcp://10.255.32.48:5555")
 #subscriber.connect("tcp://pc104-alessio.local:5555")
-subscriber.connect("tcp://amargan-desktop.local:5555")
+#subscriber.connect("tcp://amargan-desktop.local:5555")
 #subscriber.connect("tcp://10.255.32.77:11224")
 #subscriber.connect("tcp://10.255.32.77:5555")
+subscriber.connect("tcp://nuc.local:9001")
+
 print 'connected ...'
 prev = datetime.datetime.now()
 

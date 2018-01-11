@@ -87,9 +87,9 @@ import json
 from zmq_sub import ZMQ_sub, cstruct_cb, json_cb
 
 class ZMQ_sub_json(ZMQ_sub) :
-    
+
     def __init__(self, **kwargs):
-        
+
         draw_event_freq_ms = kwargs.pop('draw_event_freq_ms',100)
         self.fire_event = datetime.timedelta(milliseconds=draw_event_freq_ms)
         self.elapsed = datetime.timedelta()
@@ -97,24 +97,24 @@ class ZMQ_sub_json(ZMQ_sub) :
         self.lock_buff = threading.RLock()
         ZMQ_sub.__init__(self, **kwargs)
         self.callback = self.on_rx
-        
+
     def on_rx(self, id, data):
         ''' '''
         with self.lock_buff :
-            id, data = cstruct_cb(id, data)
-            #id, data = json_cb(id, data)
+            #id, data = cstruct_cb(id, data)
+            id, data = json_cb(id, data)
             self.buffered[id].append(data)
         self.elapsed += self.msg_loop
-        
+
         if self.elapsed > self.fire_event :
             # reset measured elapsed
             self.elapsed = datetime.timedelta()
-            
+
             evt = UpdateIoEvent(id=id)
             try : wx.PostEvent(wx.GetApp().GetTopWindow(), evt)
             except : pass
-        
-	return id,data
+
+        return id,data
 
     def next(self):
         '''  '''
@@ -259,7 +259,7 @@ class GraphFrame(wx.Frame):
         self.create_menu()
         self.create_status_bar()
         self.create_main_panel()
-        
+
         # 
         self.Bind(EVT_UPDATE_IO, self.on_redraw_timer)
         self.Bind(wx.EVT_CLOSE, self.on_close)
@@ -543,7 +543,7 @@ def main_zmq():
 
     import zmq
     from optparse import OptionParser
-    
+
     parser = OptionParser()
     parser.add_option("--zmq-pub", action="store", type="string", dest="zmq_pub", default="tcp://localhost:5555")
     parser.add_option("--zmq-msg-sub", action="store", type="string", dest="zmq_msg_sub", default="")
@@ -572,7 +572,7 @@ def main_zmq():
 
     for id in datagen.buffered.iterkeys():
         print id, len(datagen.buffered[id])
-       
+
 
 if __name__ == '__main__':
 

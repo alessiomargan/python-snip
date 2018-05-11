@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Flask-SocketIO Test</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+            // Use a "/test" namespace.
+            // An application can open a connection on multiple namespaces, and
+            // Socket.IO will multiplex all those connections on a single
+            // physical channel. If you don't care about multiple channels, you
+            // can set the namespace to an empty string.
+            namespace = '/test';
+
+            // Connect to the Socket.IO server.
+            // The connection URL has the following format:
+            //     http[s]://<domain>:<port>[/<namespace>]
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+            // Event handler for new connections.
+            // The callback function is invoked when a connection with the
+            // server is established.
+            socket.on('connect', function() {
+                socket.emit('my_event', {data: 'I\'m connected!'});
+            });
+
+            // Interval function that tests message latency by sending a "ping"
+            // message. The server then responds with a "pong" message and the
+            // round trip time is measured.
+            var ping_pong_times = [];
+            var start_time;
+            window.setInterval(function() {
+                start_time = (new Date).getTime();
+                socket.emit('my_ping');
+            }, 1000);
+
+            // Handler for the "pong" message. When the pong is received, the
+            // time from the ping is stored, and the average of the last 30
+            // samples is average and displayed.
+            socket.on('my_pong', function() {
+                var latency = (new Date).getTime() - start_time;
+                ping_pong_times.push(latency);
+                ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+                var sum = 0;
+                for (var i = 0; i < ping_pong_times.length; i++)
+                    sum += ping_pong_times[i];
+                $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+            });
+
+            // Event handler for server sent data.
+            // The callback function is invoked whenever the server emits data
+            // to the client. The data is then displayed in the "Received"
+            // section of the page.
+            socket.on('my_response', function(msg) {
+                $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+            });
+            socket.on('zdata', function(msg) {
+                tRow = $('<tr>');
+                tRow.attr("id",msg.z_id);
+                tRow.append($('<td>').html(msg.z_id));
+                $.each(msg.z_data, function(k,v) {
+                    tRow.append($('<td>').html(k+" : "+v));
+                });
+                var rId = msg.z_id;
+                var found = false;
+                if ( $('#zmq_table tr').length ) {
+                    $('#zmq_table tr').each(function() {
+                        //console.log($(this).attr('id'))
+                        if ( $(this).attr('id') == rId) {
+                            found = true;
+                            $(this).html(tRow);
+                        }
+                     });
+                 }
+                 if ( found ) {
+                    //$('#zmq_table').append(tRow);
+                    //console.log('found '+ rId);
+                 }else {
+                    $('#zmq_table').append(tRow);
+                };
+            });
+
+            $('form#zmq').submit(function(event) {
+                var zmq_opts = ' --zmq-pub-gen-host='+$('#zmq_host').val();
+                    zmq_opts+= ' --zmq-pub-gen-port='+$('#zmq_port').val();
+                    zmq_opts+= ' --signals='+$('#zmq_signals').val();
+                socket.emit('zmq_opt', {data: zmq_opts});
+
+                return false;
+            });
+
+
+        });
+    </script>
+</head>
+<body>
+    <h1>Flask-SocketIO Test</h1>
+    <p>Hello World !!</p>
+    <p>Async mode is: <b>{{ async_mode }}</b></p>
+    <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
+    <h2>ZMQ_sub config:</h2>
+    <form id="zmq" method="POST" action='#'>
+        <input type="text" name="zmq_host" id="zmq_host" placeholder="zmq_host" size="16">
+        <input type="text" name="zmq_port" id="zmq_port" placeholder="zmq_port" size="16">
+        <input type="text" name="zmq_signals" id="zmq_signals" placeholder="zmq_signals" size="32">
+        </br>
+        <input type="submit" value="Apply">
+    <//br>
+    <h2>Data:</h2>
+    <div id="zmq_data">
+        <table id="zmq_table"></table>
+    </div>
+    <h2>Receive:</h2>
+    <div id="log"></div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-#!/usr/bin/python3.5
+#! /usr/bin/python3.5
 
 import threading
 import datetime
@@ -41,7 +41,7 @@ def zmq_pub_gen(hostname, port_range):
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('coman-disney.local', range(9001,9038))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('coman-disney.local', [9034,9035,9036,9037])
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('coman-disney.local', [9037])
-DEFAULT_ZMQ_PUB = zmq_pub_gen('localhost', [9547,9548])
+DEFAULT_ZMQ_PUB = zmq_pub_gen('localhost', range(9000,9100))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('localhost', range(9801,9804))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('com-exp.local', range(9500,9600))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('com-exp.local', [9501,10103,10104])
@@ -73,6 +73,7 @@ def json_cb(msg_id, data, signals):
 def protobuf_cb(msg_id, data, signals):
     
     def filter_dict(key, dict_to_filter):
+        # type: (string, dict) -> dict
         if len(signals):
             _filter_dict = dict_to_filter[key]
             try:
@@ -97,21 +98,32 @@ def protobuf_cb(msg_id, data, signals):
 
     elif rx_pdo.type == rx_pdo.RX_FT6:
         pb_dict = filter_dict('ft6_rx_pdo', pb_dict)
-        
+        try:
+            ati_dict = pb_dict['ft_ati_rx']
+            pb_dict.update(ati_dict)
+            pb_dict.pop('ft_ati_rx')
+        except KeyError:
+            pass
+
     elif rx_pdo.type == rx_pdo.RX_FOOT_SENS:
         pb_dict = filter_dict('footWalkman_rx_pdo', pb_dict)
 
     elif rx_pdo.type == rx_pdo.RX_SKIN_SENS:
         pb_dict = filter_dict('skin_rx_pdo', pb_dict)
-        
-        a = np.array(pb_dict['forceXY'])
-        #a = np.array([1 if z > 5 else 0 for z in pb_dict['forceXY']] )
-        b = np.reshape(a, (8, 3))
-        c = b.transpose()
-        print (c)
+        # a = np.array(pb_dict['forceXY'])
+        # a = np.array([1 if z > 5 else 0 for z in pb_dict['forceXY']] )
+        # b = np.reshape(a, (8, 3))
+        # c = b.transpose()
+        # print (c)
         
     elif rx_pdo.type == rx_pdo.RX_MC_HAND:
         pb_dict = filter_dict('mcHand_rx_pdo', pb_dict)
+
+    elif rx_pdo.type == rx_pdo.RX_HERI_HAND:
+        pb_dict = filter_dict('heriHand_rx_pdo', pb_dict)
+
+    elif rx_pdo.type == rx_pdo.RX_POW_F28M36:
+        pb_dict = filter_dict('powF28M36_rx_pdo', pb_dict)
 
     pprint.pprint((msg_id, pb_dict))
     return msg_id, pb_dict
@@ -147,7 +159,6 @@ class ZMQ_sub(threading.Thread):
     # read data from a zmq publisher '''
     
     def __init__(self, **kwargs):
-
         threading.Thread.__init__(self)
         self.stop_event = threading.Event()
         self.stop_event.clear()
@@ -162,7 +173,7 @@ class ZMQ_sub(threading.Thread):
         assert self.zmq_context
         self.subscriber = self.zmq_context.socket(zmq.SUB)
         for msg in self.zmq_msg_sub:
-            self.subscriber.setsockopt_string(zmq.SUBSCRIBE, msg)
+            self.subscriber.setsockopt_string(zmq.SUBSCRIBE, unicode(msg))
         for pub in self.zmq_pub:
             self.subscriber.connect(pub)
         print ('Connect to Data publisher %s' % self.zmq_pub)
@@ -206,6 +217,37 @@ class ZMQ_sub(threading.Thread):
 
     def stop(self):
         self.stop_event.set()
+
+
+class ZMQ_sub_buffered(ZMQ_sub):
+
+    def __init__(self, **kwargs):
+        self.elapsed = datetime.timedelta()
+        self.buffered = defaultdict(list)
+        self.lock_buff = threading.RLock()
+        ZMQ_sub.__init__(self, **kwargs)
+        self.callback = self.on_rx
+        self.key_prefix = kwargs.get('key_prefix')
+
+    def on_rx(self, msg_id, data, signals):
+        with self.lock_buff:
+            # msg_id, data_dict = json_cb(msg_id, data, signals)
+            msg_id, data_dict = protobuf_cb(msg_id, data, signals)
+            self.buffered[msg_id].append(data_dict)
+        self.elapsed += self.msg_loop
+        return msg_id, data_dict
+
+    def next(self):
+        data = defaultdict(list)
+        with self.lock_buff:
+            for msg_id in self.buffered.iterkeys():
+                print (msg_id, len(self.buffered[msg_id]))
+                for d in self.buffered[msg_id]:
+                    for k, v in d.items():
+                        data[msg_id+'_'+k].append(v)
+            # clean buffered data
+            self.buffered = defaultdict(list)
+        return data
 
 
 def zmq_sub_option(args):

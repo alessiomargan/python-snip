@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import zmq
+import sys
 import operator
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +11,7 @@ import datetime
 import threading
 from collections import defaultdict
 
-from zmq_sub import zmq_sub_option, ZMQ_sub, json_cb, protobuf_cb
+from zmq_sub import zmq_sub_option, ZMQ_sub_buffered
 
 fig = plt.figure()
 gs = gridspec.GridSpec(4, 3)
@@ -79,38 +79,6 @@ global th
   'torque': -0.7925033569335938})
 '''
 
-class ZMQ_sub_buffered(ZMQ_sub) :
-
-    def __init__(self, **kwargs):
-
-        # draw_event_freq_ms = kwargs.pop('draw_event_freq_ms',100)
-        # self.fire_event = datetime.timedelta(milliseconds=draw_event_freq_ms)
-        self.elapsed = datetime.timedelta()
-        self.buffered = defaultdict(list)
-        self.lock_buff = threading.RLock()
-        ZMQ_sub.__init__(self, **kwargs)
-        self.callback = self.on_rx
-        self.key_prefix = kwargs.get('key_prefix')
-
-    def on_rx(self, msg_id, data, signals):
-        with self.lock_buff:
-            # msg_id, data_dict = json_cb(msg_id, data, signals)
-            msg_id, data_dict = protobuf_cb(msg_id, data, signals)
-            self.buffered[msg_id].append(data_dict)
-        self.elapsed += self.msg_loop
-        return msg_id, data_dict
-
-    def next(self):
-        data = defaultdict(list)
-        with self.lock_buff:
-            for msg_id in self.buffered.iterkeys():
-                # print '>>', msg_id, len(self.buffered[msg_id])
-                for d in self.buffered[msg_id]:
-                    for k, v in d.items():
-                        data[msg_id+'_'+k].append(v)
-            # clean buffered data
-            self.buffered = defaultdict(list)
-        return data
 
 
 def init():
@@ -118,6 +86,7 @@ def init():
     for l in lines:
         l.set_data([], [])
     return lines
+
 
 def animate(i):
 
@@ -159,7 +128,7 @@ def animate(i):
 
 if __name__ == '__main__' :
 
-    dict_opt = zmq_sub_option()
+    dict_opt = zmq_sub_option(sys.argv[1:])
     th = ZMQ_sub_buffered(**dict_opt)
     th.start()
 

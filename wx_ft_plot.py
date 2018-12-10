@@ -8,11 +8,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
-print(matplotlib.__version__, matplotlib.__file__)
-
+#from typing import Any
 from zmq_sub import zmq_sub_option, ZMQ_sub_buffered
 
-plot_data = defaultdict(list)
+print(matplotlib.__version__, matplotlib.__file__)
+
+
+gPlot_data = defaultdict(list)  # type: defaultdict[Any, list]
 global th
 
 fig = plt.figure()
@@ -74,8 +76,17 @@ ati_names = (
     '_torque_z',
 )
 
+names = (
+    '_force_x',
+    '_force_y',
+    '_force_z',
+    '_torque_x',
+    '_torque_y',
+    '_torque_z',
+)
+
 lines = ati_lines
-var_names = ati_names
+var_names = names
 
 def init():
     
@@ -87,14 +98,14 @@ def init():
 def animate(i):
 
     new_data = th.next()
-    for k in plot_data.iterkeys():
-        plot_data[k].extend(new_data[k])
-        plot_data[k] = plot_data[k][-5000:]
+    for k in gPlot_data.iterkeys():
+        gPlot_data[k].extend(new_data[k])
+        gPlot_data[k] = gPlot_data[k][-5000:]
 
-    x = np.arange(len(plot_data[th.key_prefix+'_force_x']))
+    x = np.arange(len(gPlot_data[th.key_prefix+'_force_x']))
 
     for name, lin in zip(var_names, lines):
-        y = np.array(plot_data[th.key_prefix + name])
+        y = np.array(gPlot_data[th.key_prefix + name])
         lin.set_data(x, y)
 
     return lines

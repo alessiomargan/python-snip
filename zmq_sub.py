@@ -173,6 +173,7 @@ class ZMQ_sub(threading.Thread):
         assert self.zmq_context
         self.subscriber = self.zmq_context.socket(zmq.SUB)
         for msg in self.zmq_msg_sub:
+            #self.subscriber.setsockopt_string(zmq.SUBSCRIBE, msg)
             self.subscriber.setsockopt_string(zmq.SUBSCRIBE, unicode(msg))
         for pub in self.zmq_pub:
             self.subscriber.connect(pub)

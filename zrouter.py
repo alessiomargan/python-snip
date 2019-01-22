@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import sys
 import zmq
@@ -14,19 +14,18 @@ zcontext = zmq.Context()
         
 def zmq_rep_thread(id):
     zrep_sock = zcontext.socket(zmq.XREQ)
-    zrep_sock.setsockopt(zmq.IDENTITY, id)
-    zrep_sock.connect("tcp://*:%d"%ZMQ_REP_BROKER_PORT)
-    while not loop.is_set() :
-        try : 
+    zrep_sock.setsockopt_string(zmq.IDENTITY, id)
+    zrep_sock.connect("tcp://*:5560")
+    while not loop.is_set():
+        try:
             message = zrep_sock.recv_multipart()
-            print id, "Received request: ", message
-            zrep_sock.send_multipart(["back","","World"])
+            print(id, "Received request: ", message)
+            zrep_sock.send_multipart(["back", "", "World"])
             #zrep_sock.send("World")
-        except zmq.ZMQError, e :
-            print e, id
+        except zmq.ZMQError as e:
+            print(e, id)
     zrep_sock.close()
-    print 'zmq_rep_thread .. exit'
-    
+    print('zmq_rep_thread .. exit')
     
     
 def zmq_req_rep_queue(req_broker_port=ZMQ_REQ_BROKER_PORT,
@@ -35,11 +34,11 @@ def zmq_req_rep_queue(req_broker_port=ZMQ_REQ_BROKER_PORT,
     # Prepare our context and sockets
     _context = zmq.Context()
     frontend = _context.socket(zmq.XREQ)
-    frontend.setsockopt(zmq.IDENTITY, 'front')
+    frontend.setsockopt_string(zmq.IDENTITY, 'front')
     backend = _context.socket(zmq.XREQ)
-    backend.setsockopt(zmq.IDENTITY, 'back')
-    frontend.bind("tcp://*:%d"%req_broker_port)
-    backend.bind("tcp://*:%d"%rep_broker_port)
+    backend.setsockopt_string(zmq.IDENTITY, 'back')
+    frontend.bind("tcp://*:5559")
+    backend.bind("tcp://*:5560")
     
     #zmq.device(zmq.QUEUE, frontend, backend)
     
@@ -48,8 +47,8 @@ def zmq_req_rep_queue(req_broker_port=ZMQ_REQ_BROKER_PORT,
     poller.register(frontend, zmq.POLLIN)
     poller.register(backend, zmq.POLLIN)
     
-    print "Setup Broker Req:%d --> Rep:%d" % (req_broker_port,rep_broker_port)
-    
+    print("Setup Broker Req:%d --> Rep:%d" % (req_broker_port,rep_broker_port))
+
     # Switch messages between sockets
     while True:
         try:
@@ -59,13 +58,12 @@ def zmq_req_rep_queue(req_broker_port=ZMQ_REQ_BROKER_PORT,
         
         if frontend in items:
             msg = frontend.recv_multipart()
-            print 'front2back', msg
+            print('front2back', msg)
             #msg[0] = 'uno'
             backend.send_multipart(msg)
         if backend in items:
             msg = backend.recv_multipart()
-            print 'back2front', msg
-            #msg[0] = 'culo'
+            print('back2front', msg)            #msg[0] = 'culo'
             frontend.send_multipart(msg)
             
             
@@ -80,4 +78,4 @@ sys.__stdin__.readline()
 loop.set()
 zcontext.term()
 zbroker.terminate()
-print 'Exit'
+print('Exit')

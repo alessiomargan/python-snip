@@ -24,17 +24,27 @@ ax1 = fig.add_subplot(gs[0, :], xlim=(0, 5000), ylim=(-0.5, 3))
 ax2 = fig.add_subplot(gs[1, :], xlim=(0, 5000), ylim=(-100, 3000))
 
 lin1, = ax1.plot([], [], lw=1, label='fx')
-lin2, = ax2.plot([], [], lw=1, label='rtt')
+lin2, = ax1.plot([], [], lw=1, label='fy')
+lin3, = ax1.plot([], [], lw=1, label='fz')
+lin4, = ax1.plot([], [], lw=1, label='tx')
+lin5, = ax1.plot([], [], lw=1, label='ty')
+lin6, = ax1.plot([], [], lw=1, label='tz')
+lin7, = ax2.plot([], [], lw=1, label='rtt')
 
 ax1.legend()
 
 ati_lines = (
     #
-    lin1, lin2,
+    lin1, lin2, lin3, lin4, lin5, lin6, lin7
 )
 
 names = (
     '_force_x',
+    '_force_y',
+    '_force_z',
+    '_torque_x',
+    '_torque_y',
+    '_torque_z',
     '_rtt',
 )
 
@@ -51,7 +61,7 @@ def init():
 def animate(i):
 
     new_data = th.next()
-    for k in gPlot_data.iterkeys():
+    for k in gPlot_data.keys():
         gPlot_data[k].extend(new_data[k])
         gPlot_data[k] = gPlot_data[k][-5000:]
 
@@ -64,7 +74,7 @@ def animate(i):
     return lines
 
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
 
     dict_opt = zmq_sub_option(sys.argv[1:])
     th = ZMQ_sub_buffered(**dict_opt)

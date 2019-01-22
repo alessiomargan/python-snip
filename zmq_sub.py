@@ -1,4 +1,4 @@
-#! /usr/bin/python3.5
+#! /usr/bin/python3
 
 import threading
 import datetime
@@ -7,24 +7,17 @@ import zmq
 import json
 from collections import defaultdict
 from optparse import OptionParser
-
-import numpy as np
-
-#import sys
-#sys.path.append('/home/amargan/work/code/COMAN_shared/utils/python')
-#import board_data_type
-#import policy_maps
+from protobuf_to_dict import protobuf_to_dict
 
 import sys
 sys.path.append('/home/amargan/work/code/ecat_dev/ecat_master_advr/build/protobuf')
 import ecat_pdo_pb2
-from protobuf_to_dict import protobuf_to_dict
 
 
 def zmq_pub_gen(hostname, port_range):
-    def gen() :
-        for e in port_range :
-            yield 'tcp://%s:%d,'%(hostname,e)    
+    def gen():
+        for e in port_range:
+            yield 'tcp://%s:%d,' % (hostname, e)
     return "".join(gen())[:-1]
 
 
@@ -41,7 +34,7 @@ def zmq_pub_gen(hostname, port_range):
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('coman-disney.local', range(9001,9038))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('coman-disney.local', [9034,9035,9036,9037])
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('coman-disney.local', [9037])
-DEFAULT_ZMQ_PUB = zmq_pub_gen('localhost', range(9000,9100))
+DEFAULT_ZMQ_PUB = zmq_pub_gen('localhost', range(9000, 9100))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('localhost', range(9801,9804))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('com-exp.local', range(9500,9600))
 # DEFAULT_ZMQ_PUB = zmq_pub_gen('com-exp.local', [9501,10103,10104])
@@ -173,8 +166,8 @@ class ZMQ_sub(threading.Thread):
         assert self.zmq_context
         self.subscriber = self.zmq_context.socket(zmq.SUB)
         for msg in self.zmq_msg_sub:
-            #self.subscriber.setsockopt_string(zmq.SUBSCRIBE, msg)
-            self.subscriber.setsockopt_string(zmq.SUBSCRIBE, unicode(msg))
+            self.subscriber.setsockopt_string(zmq.SUBSCRIBE, msg)
+            #self.subscriber.setsockopt_string(zmq.SUBSCRIBE, unicode(msg))
         for pub in self.zmq_pub:
             self.subscriber.connect(pub)
         print ('Connect to Data publisher %s' % self.zmq_pub)
@@ -188,7 +181,7 @@ class ZMQ_sub(threading.Thread):
 
     def run(self):
         # poll on sockets
-        print ("...start thread activity")
+        print("...start thread activity")
         start_time = datetime.datetime.now()
         previous = datetime.datetime.now()
         self.msg_loop = datetime.timedelta()
@@ -241,8 +234,8 @@ class ZMQ_sub_buffered(ZMQ_sub):
     def next(self):
         data = defaultdict(list)
         with self.lock_buff:
-            for msg_id in self.buffered.iterkeys():
-                print (msg_id, len(self.buffered[msg_id]))
+            for msg_id in self.buffered.keys():
+                print(msg_id, len(self.buffered[msg_id]))
                 for d in self.buffered[msg_id]:
                     for k, v in d.items():
                         data[msg_id+'_'+k].append(v)
@@ -298,6 +291,6 @@ if __name__ == '__main__' :
     th.stop()
     th.join(1.0)
 
-    for k in th.msg_id_ts.iterkeys():
+    for k in th.msg_id_ts.keys():
         pprint.pprint((k, th.msg_id_ts[k][:10]))
         # print reduce(operator.add ,(ts for ts in th.msg_id_ts[k]))

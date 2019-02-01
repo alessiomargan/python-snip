@@ -1,14 +1,23 @@
 
-
 cmds :
-  - type : SET_FLASH_CMD
-    flash_cmd :
-      type: LOAD_DEFAULT_PARAMS
+  - type: SET_CTRL_CMD
+    ctrl_cmd:
+      type: CTRL_TEST_DONE
+      board_id: 696
+
+  - type: SET_CTRL_CMD
+    ctrl_cmd:
+      type: CTRL_TEST_ERROR
       board_id: 696
 
   - type: SET_FLASH_CMD
     flash_cmd:
-      type: LOAD_PARAMS_FROM_FLASH
+      type: LOAD_DEFAULT_PARAMS
+      board_id: 696
+
+  - type : SET_CTRL_CMD
+    ctrl_cmd :
+      type: CTRL_DAC_TUNE
       board_id: 696
 
   - type: SET_FLASH_CMD
@@ -16,17 +25,8 @@ cmds :
       type: SAVE_PARAMS_TO_FLASH
       board_id: 696
 
-  - type: SET_CTRL_CMD
+  - type: SET_FLASH_CMD
     flash_cmd:
-      type: CTRL_DAC_TUNE
+      type: LOAD_PARAMS_FROM_FLASH
       board_id: 696
 
-  - type: SET_CTRL_CMD
-    flash_cmd:
-      type: CTRL_TEST_DONE
-      board_id: 696
-
-  - type: SET_CTRL_CMD
-    flash_cmd:
-      type: CTRL_TEST_ERROR
-      board_id: 696

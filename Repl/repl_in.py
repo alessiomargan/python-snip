@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-import io
+import sys
 import yaml
+import time
+from optparse import OptionParser
 import ec_boards_base_input_pb2 as repl_cmd
 from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf
 
 
 def repl_option(args):
     parser = OptionParser()
-    parser.add_option("--cmd", dest="repl_cmd", action="store", type="string", default="")
+    parser.add_option("-f", dest="repl_yaml", action="store", type="string", default="")
+    parser.add_option("-c", dest="cmd_exec_cnt", action="store", type="int", default=1)
+    #parser.add_option("--cmd", dest="repl_cmd", action="store", type="string", default="")
     (options, args) = parser.parse_args(args=args)
     dict_opt = vars(options)
-
+    return dict_opt
 
 def open_pipes():
     try:
@@ -39,20 +43,31 @@ def read_from_pipe(rd_fd):
 
 if __name__ == '__main__':
 
+    opts = repl_option(sys.argv[1:])
+
     wr_to, rd_from = open_pipes()
 
-    d = yaml.load(open("repl.yaml", 'r'))
-    print(d)
+    d = yaml.load(open(opts["repl_yaml"], 'r'))
+    #print(d)
 
-    for cmd_dict in d['cmds']:
-        ''' prepare cmd '''
-        #cmd_dict = {"type": "SET_FLASH_CMD", "flash_cmd": {"type": "LOAD_DEFAULT_PARAMS", "board_id": 696}}
-        cmd = dict_to_protobuf(repl_cmd.Repl_cmd, cmd_dict)
-        print(cmd)
-        write_to_pipe(cmd.SerializeToString(), wr_to)
+    cnt = opts["cmd_exec_cnt"]
+    while cnt:
 
-        ''' wait reply ... blocking'''
-        reply = read_from_pipe(rd_from)
-        print(reply)
+        print("cmd_exec_cnt", cnt)
+        cnt -= 1
+
+        for cmd_dict in d['cmds']:
+            ''' prepare cmd '''
+            # cmd_dict = {"type": "SET_FLASH_CMD", "flash_cmd": {"type": "LOAD_DEFAULT_PARAMS", "board_id": 696}}
+            cmd = dict_to_protobuf(repl_cmd.Repl_cmd, cmd_dict)
+            # print(cmd)
+            write_to_pipe(cmd.SerializeToString(), wr_to)
+
+            ''' wait reply ... blocking'''
+            reply = read_from_pipe(rd_from)
+            # print(reply)
+            time.sleep(0.05)
+
+        time.sleep(0.5)
 
     print("Exit")

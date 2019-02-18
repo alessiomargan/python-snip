@@ -23,6 +23,8 @@ gs = gridspec.GridSpec(6, 1)
 f_lim = (-200, 200)
 t_lim = (-30, 30)
 
+
+
 ax1 = fig.add_subplot(gs[0, :], xlim=(0, 5000), ylim=f_lim)
 ax2 = fig.add_subplot(gs[1, :], xlim=(0, 5000), ylim=f_lim)
 ax3 = fig.add_subplot(gs[2, :], xlim=(0, 5000), ylim=f_lim)

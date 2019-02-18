@@ -1,5 +1,15 @@
-
 cmds :
+  - type: SET_CTRL_CMD
+    ctrl_cmd:
+      type: CTRL_TEST_DONE
+      board_id: 696
+
+  - type: SET_CTRL_CMD
+    ctrl_cmd:
+      type: CTRL_TEST_ERROR
+      board_id: 696
+
+no_cmds :
   - type: SET_CTRL_CMD
     ctrl_cmd:
       type: CTRL_TEST_DONE

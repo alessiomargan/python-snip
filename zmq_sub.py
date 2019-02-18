@@ -170,14 +170,14 @@ class ZMQ_sub(threading.Thread):
             #self.subscriber.setsockopt_string(zmq.SUBSCRIBE, unicode(msg))
         for pub in self.zmq_pub:
             self.subscriber.connect(pub)
-        print ('Connect to Data publisher %s' % self.zmq_pub)
+        print('Connect to Data publisher %s' % self.zmq_pub)
 
         # Initialize poll set
         self.poller = zmq.Poller()
         self.poller.register(self.subscriber, zmq.POLLIN)
         
         # start thread activity .... start by user !!!!
-        #self.start()
+        # self.start()
 
     def run(self):
         # poll on sockets

@@ -39,7 +39,7 @@ def ping_pong():
 def test_message(message):
     global zmq_thread
     global tmp_cb
-    print (message['data'])
+    print(message['data'])
     zmq_sub_args = message['data'].split()
     with thread_lock:
         if zmq_thread is not None:

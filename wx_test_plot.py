@@ -20,8 +20,10 @@ global th
 fig = plt.figure()
 gs = gridspec.GridSpec(2, 1)
 
-ax1 = fig.add_subplot(gs[0, :], xlim=(0, 5000), ylim=(-0.5, 3))
-ax2 = fig.add_subplot(gs[1, :], xlim=(0, 5000), ylim=(-100, 3000))
+buff_size = 5000
+
+ax1 = fig.add_subplot(gs[0, :], xlim=(0, buff_size), ylim=(-0.5, 3))
+ax2 = fig.add_subplot(gs[1, :], xlim=(0, buff_size), ylim=(-100, 3000))
 
 lin1, = ax1.plot([], [], lw=1, label='fx')
 lin2, = ax1.plot([], [], lw=1, label='fy')
@@ -63,7 +65,7 @@ def animate(i):
     new_data = th.next()
     for k in gPlot_data.keys():
         gPlot_data[k].extend(new_data[k])
-        gPlot_data[k] = gPlot_data[k][-5000:]
+        gPlot_data[k] = gPlot_data[k][-buff_size:]
 
     x = np.arange(len(gPlot_data[th.key_prefix+'_force_x']))
 

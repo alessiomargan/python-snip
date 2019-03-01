@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import sys
 import numpy as np
@@ -85,5 +85,5 @@ if __name__ == '__main__':
     ani = animation.FuncAnimation(fig, animate, init_func=init, interval=100, blit=True)
     plt.show()
     
-    print ("Set thread event ....")
+    print("Set thread event ....")
     th.stop()

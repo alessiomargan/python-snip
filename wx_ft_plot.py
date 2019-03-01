@@ -100,7 +100,7 @@ def init():
 def animate(i):
 
     new_data = th.next()
-    for k in gPlot_data.iterkeys():
+    for k in gPlot_data.keys():
         gPlot_data[k].extend(new_data[k])
         gPlot_data[k] = gPlot_data[k][-5000:]
 

@@ -1,20 +1,38 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
+
+"""
+('NoNe@Motor_id_123',
+ {'aux': 0.0,
+  'board_temp': 41.0,
+  'fault': 0,
+  'link_pos': -0.12549510598182678,
+  'link_vel': 0.0,
+  'motor_pos': -0.1254965364933014,
+  'motor_temp': 33.0,
+  'motor_vel': 0.0,
+  'op_idx_ack': 0,
+  'rtt': 990,
+  'temperature': 8489,
+  'torque': -4.564897060394287})
+"""
 
 import sys
 import operator
 import numpy as np
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.gridspec as gridspec
 
-import datetime
-import threading
-from collections import defaultdict
-
 from zmq_sub import zmq_sub_option, ZMQ_sub_buffered
+
+gPlot_data = defaultdict(list)  # type: defaultdict[Any, list]
+global th
 
 fig = plt.figure()
 gs = gridspec.GridSpec(4, 3)
+
 
 ax1 = fig.add_subplot(gs[0, :], xlim=(0, 5000), ylim=(-3, 3))
 ax2 = fig.add_subplot(gs[1, :], xlim=(0, 5000), ylim=(-10, 10))
@@ -37,7 +55,7 @@ lin7, = ax4.plot([], [], lw=2, label='rtt')
 lin8, = ax5.plot([], [], lw=2, label='mT')
 lin9, = ax5.plot([], [], lw=2, label='bT')
 
-lin10, = ax6.plot([], [], lw=2, label='p_err')
+#lin10, = ax6.plot([], [], lw=2, label='p_err')
 #lin11, = ax6.plot([], [], lw=2, label='v_err')
 
 ax1.legend()
@@ -49,7 +67,7 @@ ax6.legend()
 
 lines = [
     lin1,
-    lin2,
+#    lin2,
     lin3,
     lin4,
     lin5,
@@ -57,32 +75,25 @@ lines = [
     lin7,
     lin8,
     lin9,
-    lin10,
+#    lin10,
 #    lin11,
 ]
 
-plot_data = defaultdict(list)
-global th
-
-
-'''
-('Motor_id_4',
- {'aux': 0.0,
-  'fault': 0,
-  'link_pos': 0.31863078474998474,
-  'link_vel': -0.0476837158203125,
-  'motor_pos': 0.31815823912620544,
-  'motor_vel': -0.0476837158203125,
-  'op_idx_ack': 0,
-  'rtt': 993,
-  'temperature': 45,
-  'torque': -0.7925033569335938})
-'''
-
-
+var_names = (
+    '_link_pos',
+#    '_ref_pos',
+    '_motor_pos',
+    '_torque',
+    '_link_vel',
+    '_motor_vel',
+    '_rtt',
+    '_motor_temp',
+    '_board_temp',
+#    '_p_err',
+)
 
 def init():
-    
+
     for l in lines:
         l.set_data([], [])
     return lines
@@ -91,40 +102,18 @@ def init():
 def animate(i):
 
     new_data = th.next()
-    for k in plot_data.iterkeys():
-        plot_data[k].extend(new_data[k])
-        plot_data[k] = plot_data[k][-5000:]
+    for k in gPlot_data.keys():
+        gPlot_data[k].extend(new_data[k])
+        gPlot_data[k] = gPlot_data[k][-5000:]
 
-    x = np.arange(len(plot_data[th.key_prefix+'_link_pos']))
-    
-    y = np.array(plot_data[th.key_prefix+'_link_pos'])
-    lin1.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_aux'])
-    lin2.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_motor_pos'])
-    lin3.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_torque'])
-    lin4.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_motor_vel'])
-    lin5.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_link_vel'])
-    lin6.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_rtt'])
-    lin7.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_board_temp'])
-    lin8.set_data(x, y)
-    y = np.array(plot_data[th.key_prefix+'_motor_temp'])
-    lin9.set_data(x, y)
+    x = np.arange(len(gPlot_data[th.key_prefix+'_link_pos']))
 
-    y = np.absolute(np.array(map(operator.sub, plot_data[th.key_prefix+'_aux'], plot_data[th.key_prefix+'_motor_pos'])))
-    lin10.set_data(x, y)
-#    y = np.absolute(np.array(map(operator.sub, plot_data[key_prefix+'_link_vel'], plot_data[key_prefix+'_motor_vel'])))
-#    lin10.set_data(x, y)
-
-    # x = np.arange(len(plot_data[key_prefix_2+'_link_pos']))
-    # y = np.array(plot_data[key_prefix_2+'_torque'])
+    for name, lin in zip(var_names, lines):
+        y = np.array(gPlot_data[th.key_prefix + name])
+        lin.set_data(x, y)
 
     return lines
+
 
 if __name__ == '__main__' :
 
@@ -135,5 +124,5 @@ if __name__ == '__main__' :
     ani = animation.FuncAnimation(fig, animate, init_func=init, interval=50, blit=True)
     plt.show()
     
-    print ("Set thread event ....")
+    print("Set thread event ....")
     th.stop()

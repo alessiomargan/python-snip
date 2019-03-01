@@ -252,7 +252,7 @@ def zmq_sub_option(args):
     parser.add_option("--zmq-pub-gen-host", action="store", type="string", dest="zmq_pub_gen_host", default="")
     parser.add_option("--zmq-pub-gen-port", action="store", type="string", dest="zmq_pub_gen_port", default="")
     parser.add_option("--signals", action="store", type="string", dest="signals", default="")
-    parser.add_option("--cb", action="store", type="string", dest="cb", default="default_cb")
+    parser.add_option("--cb", action="store", type="string", dest="cb", default="protobuf_cb")
     # used in wx_animation
     parser.add_option("--key", action="store", type="string", dest="key_prefix", default="")
     (options, args) = parser.parse_args(args=args)

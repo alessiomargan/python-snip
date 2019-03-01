@@ -12,7 +12,7 @@ from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf
 
 def repl_option():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file_yaml", dest="repl_yaml", action="store", default="")
+    parser.add_argument("-f", "--file_yaml", dest="repl_yaml", action="store", default="repl.yaml")
     parser.add_argument("-c", dest="cmd_exec_cnt", action="store", type=int, default=1)
     args = parser.parse_args()
     dict_opt = vars(args)
@@ -39,7 +39,9 @@ class PipeIO(object):
                     print(e)
                     raise e
 
-    def send_to(self, serialized):
+    def send_to(self, cmd_dict):
+        cmd_pb = dict_to_protobuf(repl_cmd.Repl_cmd, cmd_dict)
+        serialized = cmd_pb.SerializeToString()
         msg_size = len(serialized)
         self.wr_to.write(msg_size.to_bytes(4, byteorder='little'))
         self.wr_to.write(serialized)
@@ -51,19 +53,72 @@ class PipeIO(object):
         rep.ParseFromString(self.rd_from.read(rep_size))
         return rep
 
+
+class MultiPartMessage(object):
+    header = None
+
+    @classmethod
+    def recv(cls, socket):
+        """Reads key-value message from socket, returns new instance."""
+        return cls.from_msg(socket.recv_multipart())
+
+    @property
+    def msg(self):
+        return [self.header]
+
+    def send(self, socket, identity=None):
+        """Send message to socket"""
+        msg = self.msg
+        if identity:
+            msg = [identity] + msg
+        socket.send_multipart(msg)
+
+
+class HelloMessage(MultiPartMessage):
+    header = b"HELLO"
+
+
+class EscCmdMessage(MultiPartMessage):
+    header = b"ESC_CMD"
+
+    def __init__(self, cmd):
+        self.cmd = cmd
+
+    @property
+    def msg(self):
+        # returns list of all message frames as a byte-string:
+        return [self.header, self.cmd]
+
+
+class EcatMasterCmdMessage(MultiPartMessage):
+    header = b"ECAT_MASTER_CMD"
+
+    def __init__(self, cmd):
+        self.cmd = cmd
+
+    @property
+    def msg(self):
+        # returns list of all message frames as a byte-string:
+        return [self.header, self.cmd]
+
+
 class SocketIO(object):
 
-    def __init__(self):
+    def __init__(self, uri):
 
         #  Prepare our context and sockets
         self.ctx = zmq.Context()
         self.socket = self.ctx.socket(zmq.REQ)
-        self.socket.connect("tcp://localhost:5555")
+        self.socket.connect("tcp://"+uri)
 
-    def send_to(self, serialized):
-        #msg_size = len(serialized)
-        #self.socket.send_multipart(msg_size.to_bytes(4, byteorder='little'), serialized)
-        self.socket.send(serialized)
+    def send_to(self, cmd_dict):
+        cmd_pb = dict_to_protobuf(repl_cmd.Repl_cmd, cmd_dict)
+        # print(cmd_pb)
+        if cmd_dict['type'] == "ECAT_MASTER_CMD":
+            cmd_msg = EcatMasterCmdMessage(cmd_pb.SerializeToString())
+        else:
+            cmd_msg = EscCmdMessage(cmd_pb.SerializeToString())
+        cmd_msg.send(self.socket)
 
     def recv_from(self):
         rep_data = self.socket.recv()
@@ -76,11 +131,13 @@ class SocketIO(object):
 if __name__ == '__main__':
 
     opts = repl_option()
-
-    #io = PipeIO()
-    io = SocketIO()
-
     d = yaml.load(open(opts["repl_yaml"], 'r'))
+
+    if ( d['use_zmq']):
+        io = SocketIO(d['uri'])
+    else:
+        io = PipeIO()
+
     #print(d)
 
     cnt = opts["cmd_exec_cnt"]
@@ -91,10 +148,8 @@ if __name__ == '__main__':
 
         for cmd_dict in d['cmds']:
             ''' prepare cmd '''
-            # cmd_dict = {"type": "SET_FLASH_CMD", "flash_cmd": {"type": "LOAD_DEFAULT_PARAMS", "board_id": 696}}
-            cmd = dict_to_protobuf(repl_cmd.Repl_cmd, cmd_dict)
-            # print(cmd)
-            io.send_to(cmd.SerializeToString())
+            # cmd_dict = {"type": "FLASH_CMD", "flash_cmd": {"type": "LOAD_DEFAULT_PARAMS", "board_id": 696}}
+            io.send_to(cmd_dict)
 
             ''' wait reply ... blocking'''
             reply = io.recv_from()

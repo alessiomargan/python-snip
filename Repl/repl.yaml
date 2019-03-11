@@ -1,14 +1,15 @@
 
 use_zmq : true
-#uri : "com-exp.local:5555"
-uri : "localhost:5555"
+uri : "com-exp.local:5555"
+#uri : "localhost:5555"
 
-cmds:
+
+cmdss:
   - type: ECAT_MASTER_CMD
     ecat_master_cmd:
       type: GET_SLAVES_DESCR
 
-cmdsss:
+cmdsssss:
   - type: CTRL_CMD
     board_id_list: [123,11,12,13,14,15,33]
     ctrl_cmd:
@@ -25,11 +26,19 @@ cmdsss:
 
   - type: ECAT_MASTER_CMD
     ecat_master_cmd:
+      type: GET_SLAVES_DESCR
+
+  - type: ECAT_MASTER_CMD
+    ecat_master_cmd:
       type: STOP_MASTER
 
   - type: ECAT_MASTER_CMD
     ecat_master_cmd:
       type: START_MASTER
+
+  - type: ECAT_MASTER_CMD
+    ecat_master_cmd:
+      type: GET_SLAVES_DESCR
 
   - type: CTRL_CMD
     board_id_list: [123,11,12,13,14,15,33]

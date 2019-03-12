@@ -4,6 +4,7 @@ import sys
 import os
 import time
 import yaml
+import json
 import zmq
 import argparse
 import ec_boards_base_input_pb2 as repl_cmd
@@ -39,8 +40,8 @@ class PipeIO(object):
                     print(e)
                     raise e
 
-    def send_to(self, cmd_dict):
-        cmd_pb = dict_to_protobuf(repl_cmd.Repl_cmd, cmd_dict)
+    def send_to(self, cmd: dict):
+        cmd_pb = dict_to_protobuf(repl_cmd.Repl_cmd, cmd)
         serialized = cmd_pb.SerializeToString()
         msg_size = len(serialized)
         self.wr_to.write(msg_size.to_bytes(4, byteorder='little'))
@@ -102,7 +103,7 @@ class EcatMasterCmdMessage(MultiPartMessage):
         return [self.header, self.cmd]
 
 
-class SocketIO(object):
+class zmqIO(object):
 
     def __init__(self, uri):
 
@@ -111,10 +112,11 @@ class SocketIO(object):
         self.socket = self.ctx.socket(zmq.REQ)
         self.socket.connect("tcp://"+uri)
 
-    def send_to(self, cmd_dict):
-        cmd_pb = dict_to_protobuf(repl_cmd.Repl_cmd, cmd_dict)
+    def send_to(self, cmd: dict):
+        "dict -> protobuf -> serialize to string -> send through socket"
+        cmd_pb = dict_to_protobuf(repl_cmd.Repl_cmd, cmd)
         # print(cmd_pb)
-        if cmd_dict['type'] == "ECAT_MASTER_CMD":
+        if cmd['type'] == "ECAT_MASTER_CMD":
             cmd_msg = EcatMasterCmdMessage(cmd_pb.SerializeToString())
         else:
             cmd_msg = EscCmdMessage(cmd_pb.SerializeToString())
@@ -123,9 +125,30 @@ class SocketIO(object):
     def recv_from(self):
         rep_data = self.socket.recv()
         rep = repl_cmd.Cmd_reply()
+        # fill protobuf mesg
         rep.ParseFromString(rep_data)
         print(rep)
+        d = protobuf_to_dict(rep)
+        yaml_msg = yaml.safe_load(d['msg'])
+        json_msg = json.dumps(yaml_msg)
+        print(json_msg)
         return rep
+
+
+def gen_cmds(cmds):
+
+    for cmd in cmds:
+        if 'board_id_list' in cmd:
+            id_list = cmd['board_id_list']
+            del cmd['board_id_list']
+            for _id in id_list:
+                if 'ctrl_cmd' in cmd:
+                    cmd['ctrl_cmd']['board_id'] = _id
+                if 'flash_cmd' in cmd:
+                    cmd['ctrl_cmd']['board_id'] = _id
+                yield cmd
+        else:
+            yield cmd
 
 
 if __name__ == '__main__':
@@ -134,7 +157,7 @@ if __name__ == '__main__':
     d = yaml.load(open(opts["repl_yaml"], 'r'))
 
     if ( d['use_zmq']):
-        io = SocketIO(d['uri'])
+        io = zmqIO(d['uri'])
     else:
         io = PipeIO()
 
@@ -146,16 +169,22 @@ if __name__ == '__main__':
         print("cmd_exec_cnt", cnt)
         cnt -= 1
 
-        for cmd_dict in d['cmds']:
-            ''' prepare cmd '''
-            # cmd_dict = {"type": "FLASH_CMD", "flash_cmd": {"type": "LOAD_DEFAULT_PARAMS", "board_id": 696}}
-            io.send_to(cmd_dict)
+        test_dict = {"type": "ECAT_MASTER_CMD", "ecat_master_cmd": {"type": "GET_SLAVES_DESCR"}}
+        io.send_to(test_dict)
+        ''' wait reply ... blocking'''
+        reply = io.recv_from()
 
+        if not 'cmds' in d:
+            continue
+
+        for cmd_dict in gen_cmds(d['cmds']):
+            ''' send cmd '''
+            io.send_to(cmd_dict)
             ''' wait reply ... blocking'''
             reply = io.recv_from()
 
-            time.sleep(0.01)
+            #time.sleep(0.01)
 
-        time.sleep(0.05)
+        #time.sleep(0.05)
 
     print("Exit")

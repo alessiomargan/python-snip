@@ -4,7 +4,15 @@ uri : "com-exp.local:5555"
 #uri : "localhost:5555"
 
 
-cmdss:
+cmds:
+  - type: ECAT_MASTER_CMD
+    ecat_master_cmd:
+      type: STOP_MASTER
+
+  - type: ECAT_MASTER_CMD
+    ecat_master_cmd:
+      type: START_MASTER
+
   - type: ECAT_MASTER_CMD
     ecat_master_cmd:
       type: GET_SLAVES_DESCR

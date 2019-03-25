@@ -7,7 +7,7 @@ import yaml
 import json
 import zmq
 import argparse
-import ec_boards_base_input_pb2 as repl_cmd
+import repl_cmd_pb2 as repl_cmd
 from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf
 
 
@@ -169,10 +169,10 @@ if __name__ == '__main__':
         print("cmd_exec_cnt", cnt)
         cnt -= 1
 
-        test_dict = {"type": "ECAT_MASTER_CMD", "ecat_master_cmd": {"type": "GET_SLAVES_DESCR"}}
-        io.send_to(test_dict)
-        ''' wait reply ... blocking'''
-        reply = io.recv_from()
+        #test_dict = {"type": "ECAT_MASTER_CMD", "ecat_master_cmd": {"type": "GET_SLAVES_DESCR"}}
+        #io.send_to(test_dict)
+        #''' wait reply ... blocking'''
+        #reply = io.recv_from()
 
         if not 'cmds' in d:
             continue

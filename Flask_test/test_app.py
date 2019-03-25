@@ -69,6 +69,11 @@ def test_message(message):
         zmq_thread.start()
     emit('my_response', {'data': 'Connected', 'count': 0})
 
+@socketio.on('ecat_cmd', namespace='/test')
+def test_message(message):
+
+    emit('my_response', {})
+
 
 @socketio.on('my_ping', namespace='/test')
 def ping_pong():

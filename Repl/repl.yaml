@@ -17,6 +17,13 @@ cmds:
     ecat_master_cmd:
       type: GET_SLAVES_DESCR
 
+qaz:
+  - type: FOE_MASTER
+    foe_master:
+      filename: ./examples/fw_update/fw_test/cent_AC_m3.bin
+      password: 0xA550
+      slave_pos: 1
+
 cmdsssss:
   - type: CTRL_CMD
     board_id_list: [123,11,12,13,14,15,33]

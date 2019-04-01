@@ -118,7 +118,7 @@ def protobuf_cb(msg_id, data, signals):
     elif rx_pdo.type == rx_pdo.RX_POW_F28M36:
         pb_dict = filter_dict('powF28M36_rx_pdo', pb_dict)
 
-    pprint.pprint((msg_id, pb_dict))
+    #pprint.pprint((msg_id, pb_dict))
     return msg_id, pb_dict
 
 
@@ -237,8 +237,8 @@ class ZMQ_sub_buffered(ZMQ_sub):
             for msg_id in self.buffered.keys():
                 print(msg_id, len(self.buffered[msg_id]))
                 for d in self.buffered[msg_id]:
-                    for k, v in d.items():
-                        data[msg_id+'_'+k].append(v)
+                    for key, v in d.items():
+                        data[msg_id+'_'+key].append(v)
             # clean buffered data
             self.buffered = defaultdict(list)
         return data

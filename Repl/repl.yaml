@@ -23,6 +23,7 @@ qaz:
       filename: ./examples/fw_update/fw_test/cent_AC_m3.bin
       password: 0xA550
       slave_pos: 1
+      mcu_type: m3
 
 cmdsssss:
   - type: CTRL_CMD

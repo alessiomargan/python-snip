@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='repl_cmd.proto',
   package='iit.advr',
   syntax='proto2',
-  serialized_pb=_b('\n\x0erepl_cmd.proto\x12\x08iit.advr\"!\n\x04Time\x12\x0b\n\x03sec\x18\x01 \x02(\x05\x12\x0c\n\x04nsec\x18\x02 \x02(\x05\"F\n\x06Header\x12\x0e\n\x06str_id\x18\x01 \x01(\t\x12\x1d\n\x05stamp\x18\x02 \x01(\x0b\x32\x0e.iit.advr.Time\x12\r\n\x05index\x18\x03 \x01(\x05\"\x0f\n\rSmoother_step\"\xa7\x01\n\x05Gains\x12\"\n\x04type\x18\x01 \x02(\x0e\x32\x14.iit.advr.Gains.Type\x12\n\n\x02kp\x18\x02 \x02(\x01\x12\n\n\x02ki\x18\x03 \x02(\x01\x12\n\n\x02kd\x18\x04 \x02(\x01\x12\x0b\n\x03kkp\x18\x05 \x01(\x01\x12\x0b\n\x03kki\x18\x06 \x01(\x01\x12\x0b\n\x03kkd\x18\x07 \x01(\x01\"/\n\x04Type\x12\x0c\n\x08POSITION\x10\x01\x12\r\n\tIMPEDANCE\x10\x02\x12\n\n\x06TORQUE\x10\x03\"\n\n\x08Repl_hdr\"\xce\x02\n\x08\x43trl_cmd\x12%\n\x04type\x18\x01 \x02(\x0e\x32\x17.iit.advr.Ctrl_cmd.Type\x12\x10\n\x08\x62oard_id\x18\x02 \x02(\x05\x12\r\n\x05value\x18\x03 \x01(\x02\"\xf9\x01\n\x04Type\x12\x12\n\x0e\x43TRL_TEST_DONE\x10\x01\x12\x13\n\x0f\x43TRL_TEST_ERROR\x10\x02\x12\x11\n\rCTRL_DAC_TUNE\x10\x03\x12\x1b\n\x17\x43TRL_REMOVE_TORQUE_OFFS\x10\x04\x12\x1a\n\x16\x43TRL_SET_ZERO_POSITION\x10\x05\x12\x0c\n\x08\x43TRL_FAN\x10\x06\x12\x0c\n\x08\x43TRL_LED\x10\x07\x12\x10\n\x0c\x43TRL_SANDBOX\x10\x08\x12\x13\n\x0f\x43TRL_REF_FILTER\x10\t\x12\x12\n\x0e\x43TRL_POWER_MOD\x10\n\x12\x12\n\x0e\x43TRL_CMD_START\x10\x0b\x12\x11\n\rCTRL_CMD_STOP\x10\x0c\"\x9c\x01\n\tFlash_cmd\x12&\n\x04type\x18\x01 \x02(\x0e\x32\x18.iit.advr.Flash_cmd.Type\x12\x10\n\x08\x62oard_id\x18\x02 \x02(\x05\"U\n\x04Type\x12\x18\n\x14SAVE_PARAMS_TO_FLASH\x10\x01\x12\x1a\n\x16LOAD_PARAMS_FROM_FLASH\x10\x02\x12\x17\n\x13LOAD_DEFAULT_PARAMS\x10\x03\"\x80\x01\n\x0f\x45\x63\x61t_Master_cmd\x12,\n\x04type\x18\x01 \x02(\x0e\x32\x1e.iit.advr.Ecat_Master_cmd.Type\"?\n\x04Type\x12\x10\n\x0cSTART_MASTER\x10\x01\x12\x0f\n\x0bSTOP_MASTER\x10\x02\x12\x14\n\x10GET_SLAVES_DESCR\x10\x03\"U\n\nFOE_Master\x12\x10\n\x08\x66ilename\x18\x01 \x02(\t\x12\x10\n\x08password\x18\x02 \x02(\r\x12\x11\n\tslave_pos\x18\x03 \x01(\x05\x12\x10\n\x08\x62oard_id\x18\x04 \x01(\x05\"\xc9\x02\n\x08Repl_cmd\x12\x1f\n\x04type\x18\x01 \x02(\x0e\x32\x11.iit.advr.CmdType\x12 \n\x06header\x18\x02 \x01(\x0b\x32\x10.iit.advr.Header\x12.\n\rsmoother_step\x18\x03 \x01(\x0b\x32\x17.iit.advr.Smoother_step\x12\x1e\n\x05gains\x18\x04 \x01(\x0b\x32\x0f.iit.advr.Gains\x12$\n\x08\x63trl_cmd\x18\x05 \x01(\x0b\x32\x12.iit.advr.Ctrl_cmd\x12&\n\tflash_cmd\x18\x06 \x01(\x0b\x32\x13.iit.advr.Flash_cmd\x12\x32\n\x0f\x65\x63\x61t_master_cmd\x18\x07 \x01(\x0b\x32\x19.iit.advr.Ecat_Master_cmd\x12(\n\nfoe_master\x18\x08 \x01(\x0b\x32\x14.iit.advr.FOE_Master\"\xa2\x01\n\tCmd_reply\x12&\n\x04type\x18\x01 \x02(\x0e\x32\x18.iit.advr.Cmd_reply.Type\x12#\n\x08\x63md_type\x18\x02 \x02(\x0e\x32\x11.iit.advr.CmdType\x12\x0b\n\x03msg\x18\x03 \x02(\t\x12 \n\x06header\x18\x04 \x01(\x0b\x32\x10.iit.advr.Header\"\x19\n\x04Type\x12\x07\n\x03\x41\x43K\x10\x01\x12\x08\n\x04NACK\x10\x02*q\n\x07\x43mdType\x12\x15\n\x11SET_SMOOTHER_STEP\x10\x01\x12\r\n\tSET_GAINS\x10\x02\x12\x0c\n\x08\x43TRL_CMD\x10\x03\x12\r\n\tFLASH_CMD\x10\x04\x12\x13\n\x0f\x45\x43\x41T_MASTER_CMD\x10\x05\x12\x0e\n\nFOE_MASTER\x10\x06')
+  serialized_pb=_b('\n\x0erepl_cmd.proto\x12\x08iit.advr\"!\n\x04Time\x12\x0b\n\x03sec\x18\x01 \x02(\x05\x12\x0c\n\x04nsec\x18\x02 \x02(\x05\"F\n\x06Header\x12\x0e\n\x06str_id\x18\x01 \x01(\t\x12\x1d\n\x05stamp\x18\x02 \x01(\x0b\x32\x0e.iit.advr.Time\x12\r\n\x05index\x18\x03 \x01(\x05\"\x0f\n\rSmoother_step\"\xa7\x01\n\x05Gains\x12\"\n\x04type\x18\x01 \x02(\x0e\x32\x14.iit.advr.Gains.Type\x12\n\n\x02kp\x18\x02 \x02(\x01\x12\n\n\x02ki\x18\x03 \x02(\x01\x12\n\n\x02kd\x18\x04 \x02(\x01\x12\x0b\n\x03kkp\x18\x05 \x01(\x01\x12\x0b\n\x03kki\x18\x06 \x01(\x01\x12\x0b\n\x03kkd\x18\x07 \x01(\x01\"/\n\x04Type\x12\x0c\n\x08POSITION\x10\x01\x12\r\n\tIMPEDANCE\x10\x02\x12\n\n\x06TORQUE\x10\x03\"\n\n\x08Repl_hdr\"\xce\x02\n\x08\x43trl_cmd\x12%\n\x04type\x18\x01 \x02(\x0e\x32\x17.iit.advr.Ctrl_cmd.Type\x12\x10\n\x08\x62oard_id\x18\x02 \x02(\x05\x12\r\n\x05value\x18\x03 \x01(\x02\"\xf9\x01\n\x04Type\x12\x12\n\x0e\x43TRL_TEST_DONE\x10\x01\x12\x13\n\x0f\x43TRL_TEST_ERROR\x10\x02\x12\x11\n\rCTRL_DAC_TUNE\x10\x03\x12\x1b\n\x17\x43TRL_REMOVE_TORQUE_OFFS\x10\x04\x12\x1a\n\x16\x43TRL_SET_ZERO_POSITION\x10\x05\x12\x0c\n\x08\x43TRL_FAN\x10\x06\x12\x0c\n\x08\x43TRL_LED\x10\x07\x12\x10\n\x0c\x43TRL_SANDBOX\x10\x08\x12\x13\n\x0f\x43TRL_REF_FILTER\x10\t\x12\x12\n\x0e\x43TRL_POWER_MOD\x10\n\x12\x12\n\x0e\x43TRL_CMD_START\x10\x0b\x12\x11\n\rCTRL_CMD_STOP\x10\x0c\"\x9c\x01\n\tFlash_cmd\x12&\n\x04type\x18\x01 \x02(\x0e\x32\x18.iit.advr.Flash_cmd.Type\x12\x10\n\x08\x62oard_id\x18\x02 \x02(\x05\"U\n\x04Type\x12\x18\n\x14SAVE_PARAMS_TO_FLASH\x10\x01\x12\x1a\n\x16LOAD_PARAMS_FROM_FLASH\x10\x02\x12\x17\n\x13LOAD_DEFAULT_PARAMS\x10\x03\"\x80\x01\n\x0f\x45\x63\x61t_Master_cmd\x12,\n\x04type\x18\x01 \x02(\x0e\x32\x1e.iit.advr.Ecat_Master_cmd.Type\"?\n\x04Type\x12\x10\n\x0cSTART_MASTER\x10\x01\x12\x0f\n\x0bSTOP_MASTER\x10\x02\x12\x14\n\x10GET_SLAVES_DESCR\x10\x03\"g\n\nFOE_Master\x12\x10\n\x08\x66ilename\x18\x01 \x02(\t\x12\x10\n\x08password\x18\x02 \x02(\r\x12\x10\n\x08mcu_type\x18\x03 \x01(\t\x12\x11\n\tslave_pos\x18\x04 \x01(\x05\x12\x10\n\x08\x62oard_id\x18\x05 \x01(\x05\"\xc9\x02\n\x08Repl_cmd\x12\x1f\n\x04type\x18\x01 \x02(\x0e\x32\x11.iit.advr.CmdType\x12 \n\x06header\x18\x02 \x01(\x0b\x32\x10.iit.advr.Header\x12.\n\rsmoother_step\x18\x03 \x01(\x0b\x32\x17.iit.advr.Smoother_step\x12\x1e\n\x05gains\x18\x04 \x01(\x0b\x32\x0f.iit.advr.Gains\x12$\n\x08\x63trl_cmd\x18\x05 \x01(\x0b\x32\x12.iit.advr.Ctrl_cmd\x12&\n\tflash_cmd\x18\x06 \x01(\x0b\x32\x13.iit.advr.Flash_cmd\x12\x32\n\x0f\x65\x63\x61t_master_cmd\x18\x07 \x01(\x0b\x32\x19.iit.advr.Ecat_Master_cmd\x12(\n\nfoe_master\x18\x08 \x01(\x0b\x32\x14.iit.advr.FOE_Master\"\xa2\x01\n\tCmd_reply\x12&\n\x04type\x18\x01 \x02(\x0e\x32\x18.iit.advr.Cmd_reply.Type\x12#\n\x08\x63md_type\x18\x02 \x02(\x0e\x32\x11.iit.advr.CmdType\x12\x0b\n\x03msg\x18\x03 \x02(\t\x12 \n\x06header\x18\x04 \x01(\x0b\x32\x10.iit.advr.Header\"\x19\n\x04Type\x12\x07\n\x03\x41\x43K\x10\x01\x12\x08\n\x04NACK\x10\x02*q\n\x07\x43mdType\x12\x15\n\x11SET_SMOOTHER_STEP\x10\x01\x12\r\n\tSET_GAINS\x10\x02\x12\x0c\n\x08\x43TRL_CMD\x10\x03\x12\r\n\tFLASH_CMD\x10\x04\x12\x13\n\x0f\x45\x43\x41T_MASTER_CMD\x10\x05\x12\x0e\n\nFOE_MASTER\x10\x06')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -57,8 +57,8 @@ _CMDTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1545,
-  serialized_end=1658,
+  serialized_start=1563,
+  serialized_end=1676,
 )
 _sym_db.RegisterEnumDescriptor(_CMDTYPE)
 
@@ -228,8 +228,8 @@ _CMD_REPLY_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1518,
-  serialized_end=1543,
+  serialized_start=1536,
+  serialized_end=1561,
 )
 _sym_db.RegisterEnumDescriptor(_CMD_REPLY_TYPE)
 
@@ -578,15 +578,22 @@ _FOE_MASTER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='slave_pos', full_name='iit.advr.FOE_Master.slave_pos', index=2,
-      number=3, type=5, cpp_type=1, label=1,
+      name='mcu_type', full_name='iit.advr.FOE_Master.mcu_type', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='slave_pos', full_name='iit.advr.FOE_Master.slave_pos', index=3,
+      number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='board_id', full_name='iit.advr.FOE_Master.board_id', index=3,
-      number=4, type=5, cpp_type=1, label=1,
+      name='board_id', full_name='iit.advr.FOE_Master.board_id', index=4,
+      number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -604,7 +611,7 @@ _FOE_MASTER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=961,
-  serialized_end=1046,
+  serialized_end=1064,
 )
 
 
@@ -683,8 +690,8 @@ _REPL_CMD = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1049,
-  serialized_end=1378,
+  serialized_start=1067,
+  serialized_end=1396,
 )
 
 
@@ -736,8 +743,8 @@ _CMD_REPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1381,
-  serialized_end=1543,
+  serialized_start=1399,
+  serialized_end=1561,
 )
 
 _HEADER.fields_by_name['stamp'].message_type = _TIME

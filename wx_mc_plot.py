@@ -42,7 +42,7 @@ class LivePlot(object):
 
         gs = gridspec.GridSpec(4, 3)
 
-        ax1 = self.fig.add_subplot(gs[0, :], xlim=(0, 5000), ylim=(-3, 3))
+        ax1 = self.fig.add_subplot(gs[0, :], xlim=(0, 5000), ylim=(-3.5, 3.5))
         ax2 = self.fig.add_subplot(gs[1, :], xlim=(0, 5000), ylim=(-10, 10))
         ax3 = self.fig.add_subplot(gs[2, :], xlim=(0, 5000), ylim=(-60, 60))
         ax4 = self.fig.add_subplot(gs[3, 0], xlim=(0, 5000), ylim=(900, 1100))

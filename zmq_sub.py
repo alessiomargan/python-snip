@@ -118,7 +118,7 @@ def protobuf_cb(msg_id, data, signals):
     elif rx_pdo.type == rx_pdo.RX_POW_F28M36:
         pb_dict = filter_dict('powF28M36_rx_pdo', pb_dict)
 
-    #pprint.pprint((msg_id, pb_dict))
+    pprint.pprint((msg_id, pb_dict))
     return msg_id, pb_dict
 
 

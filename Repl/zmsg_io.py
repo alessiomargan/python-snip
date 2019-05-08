@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
-
 import yaml
 import json
 import zmq
-import repl_cmd_pb2 as repl_cmd
 from protobuf_to_dict import protobuf_to_dict, dict_to_protobuf
+
+import repl_cmd_pb2 as repl_cmd
+from base_io import gen_cmds
 
 
 class MultiPartMessage(object):
@@ -79,11 +79,26 @@ class ZmsgIO(object):
         rep = repl_cmd.Cmd_reply()
         # fill protobuf mesg
         rep.ParseFromString(rep_data)
-        print(rep)
+        #print(rep)
         d = protobuf_to_dict(rep)
         yaml_msg = yaml.safe_load(d['msg'])
         json_msg = json.dumps(yaml_msg)
-        print(json_msg)
-        return rep
+        #print(json_msg)
+        if d['type'] == 'NACK':
+            print(rep)
+        return d
 
+    def doit(self, cmd: dict):
+        ''' send cmd '''
+        self.send_to(cmd)
+        ''' wait reply ... blocking'''
+        return self.recv_from()
 
+    def doit4ids(self, ids, cmd: dict):
+        ''' send cmds '''
+        cmd['board_id_list'] = ids
+        for c in gen_cmds([cmd]):
+            self.send_to(c)
+            ''' wait reply ... blocking'''
+            self.recv_from()
+        return 

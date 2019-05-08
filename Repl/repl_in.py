@@ -5,7 +5,7 @@ import argparse
 
 from pipe_io import PipeIO
 from zmsg_io import ZmsgIO
-
+from base_io import gen_cmds
 
 def repl_option():
     parser = argparse.ArgumentParser()
@@ -15,23 +15,7 @@ def repl_option():
     dict_opt = vars(args)
     return dict_opt
 
-
-def gen_cmds(cmds):
-
-    for cmd in cmds:
-        if 'board_id_list' in cmd:
-            id_list = cmd['board_id_list']
-            del cmd['board_id_list']
-            for _id in id_list:
-                if 'ctrl_cmd' in cmd:
-                    cmd['ctrl_cmd']['board_id'] = _id
-                if 'flash_cmd' in cmd:
-                    cmd['ctrl_cmd']['board_id'] = _id
-                yield cmd
-        else:
-            yield cmd
-
-
+            
 if __name__ == '__main__':
 
     opts = repl_option()
@@ -51,19 +35,13 @@ if __name__ == '__main__':
         cnt -= 1
 
         #test_dict = {"type": "ECAT_MASTER_CMD", "ecat_master_cmd": {"type": "GET_SLAVES_DESCR"}}
-        #io.send_to(test_dict)
-        #''' wait reply ... blocking'''
-        #reply = io.recv_from()
-
+        #io.doit(test_dict)
+        
         if not 'cmds' in d:
             continue
 
         for cmd_dict in gen_cmds(d['cmds']):
-            ''' send cmd '''
-            io.send_to(cmd_dict)
-            ''' wait reply ... blocking'''
-            reply = io.recv_from()
-
+            io.doit(cmd_dict)
             #time.sleep(0.01)
 
         #time.sleep(0.05)

@@ -1,0 +1,16 @@
+name: finance
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - jupyter
+  - ipykernel
+  - numpy
+  - matplotlib
+  - pyyaml
+  - coverage
+  - nbstripout
+  - nbconvert
+  - pip
+  - pip:
+    - yfinance
